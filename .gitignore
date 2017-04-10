@@ -12,6 +12,11 @@
 bin/
 gen/
 out/
+std-parms.h
+hd-parms.h
+splat.h
+splat
+splat-hd
 
 # Gradle files
 .gradle/
