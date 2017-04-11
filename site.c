@@ -14,12 +14,13 @@
 // Module include
 #include "site.h"
 
-struct site {	double lat;
-		double lon;
-		float alt;
-		char * name;
-		char * filename;
-	    };
+struct site {
+	double	lat;
+	double	lon;
+	double	alt;
+	char *	name;
+	char *	filename;
+};
 
 site_t *	site_alloc()
 {
