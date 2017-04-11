@@ -13,6 +13,7 @@ extern	void	site_set_lon(site_t * site, double lon);
 extern	double	site_get_lon(site_t * site);
 extern	void	site_set_alt(site_t * site, double alt);
 extern	double	site_get_alt(site_t * site);
+extern	void	site_set_pos(site_t * site, double lat, double lon, double alt);
 extern	void	site_set_filename(site_t * site, char * filename);
 extern	char *	site_get_filename(site_t * site1);
 extern	void	site_get_filename_cpy(site_t * site, char * filename);

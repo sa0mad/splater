@@ -555,8 +555,7 @@ void ReadPath(site_t * source, site_t * destination)
 
 		path.lat[c]=lat2;
 		path.lon[c]=lon2;
-		site_set_lat(tempsite, lat2);
-		site_set_lon(tempsite, lon2);
+		site_set_pos(tempsite, lat2, lon2, 0.0);
 		path.elevation[c]=GetElevation(tempsite);
 		path.distance[c]=distance;
 	}
@@ -705,8 +704,7 @@ double AverageTerrain(site_t * source, double azimuthx, double start_distance, d
 	lat2=lat2/DEG2RAD;
 	lon2=lon2/DEG2RAD;
 
-	site_set_lat(destination, lat2);
-	site_set_lon(destination, lon2);
+	site_set_pos(destination, lat2, lon2, 0.0);
 
 	/* If SDF data is missing for the endpoint of
 	   the radial, then the average terrain cannot
@@ -1095,9 +1093,7 @@ site_t * LoadQTH(char *filename)
 		strncat(qthfile,".qth\0",5);
 	}
 
-	site_set_lat(tempsite, 91.0);
-	site_set_lon(tempsite, 361.0);
-	site_set_alt(tempsite, 0.0);
+	site_set_pos(tempsite, 91.0, 361.0, 0.0);
 	site_set_name(tempsite, NULL);
 	site_set_filename(tempsite, NULL);
 
@@ -1106,7 +1102,7 @@ site_t * LoadQTH(char *filename)
 	if (fd!=NULL)
 	{
 		char * name;
-		double lon;
+		double lat, lon;
 		
 		name = (char *)malloc(50*sizeof(char));
 
@@ -1122,14 +1118,13 @@ site_t * LoadQTH(char *filename)
 
 		/* Site Latitude */
 		fgets(string,49,fd);
-		site_set_lat(tempsite, ReadBearing(string));
+		lat = ReadBearing(string);
 
 		/* Site Longitude */
 		fgets(string,49,fd);
 		lon = ReadBearing(string);
 		if (lon < 0.0)
 			lon += 360.0;
-		site_set_lon(tempsite, lon);
 
 		/* Antenna Height */
 		fgets(string,49,fd);
@@ -1153,15 +1148,14 @@ site_t * LoadQTH(char *filename)
 			string[x]=0;
 			sscanf(string,"%f",&alt);
 			alt *= 3.28084;
-			site_set_alt(tempsite, alt);
 		}
 
 		else
 		{
 			string[x]=0;
 			sscanf(string,"%f",&alt);
-			site_set_alt(tempsite, alt);
 		}
+		site_set_pos(tempsite, lat, lon, alt);
 
 		filename2 = (char *)malloc(255*sizeof(char));
 		for (x=0; x<254 && qthfile[x]!=0; x++)
@@ -2100,7 +2094,7 @@ void LoadCities(char *filename)
 
 		while (fd!=NULL && feof(fd)==0)
 		{
-			double lon;
+			double lat, lon;
 			/* Parse line for name, latitude, and longitude */
 
 			for (x=0, y=0, z=0; x<78 && input[x]!=0 && z<3; x++)
@@ -2120,12 +2114,11 @@ void LoadCities(char *filename)
 			}
 
 			site_set_name(city_site, str[0]);
-			site_set_lat(city_site, ReadBearing(str[1]));
+			lat = ReadBearing(str[1]);
 			lon = ReadBearing(str[2]);
 			if (lon < 0.0)
 				lon+=360.0;
-			site_set_lon(city_site, lon);
-			site_set_alt(city_site, 0.0);
+			site_set_pos(city_site, lat, lon, 0.0);
 
 			PlaceMarker(city_site);
 
@@ -2332,10 +2325,8 @@ void LoadBoundaries(char *filename)
 			{
 				sscanf(string,"%lf %lf", &lon1, &lat1);
 
-				site_set_lat(source, lat0);
-				site_set_lon(source, (lon0>0.0 ? 360.0-lon0 : -lon0));
-				site_set_lat(destination, lat1);
-				site_set_lon(destination, (lon1>0.0 ? 360.0-lon1 : -lon1));
+				site_set_pos(source, lat0, (lon0>0.0 ? 360.0-lon0 : -lon0), 0.0);
+				site_set_pos(destination, lat1, (lon1>0.0 ? 360.0-lon1 : -lon1), 0.0);
 
 				ReadPath(source,destination);
 
@@ -2810,8 +2801,7 @@ void PlotLRPath(site_t * source, site_t * destination, unsigned char mask_value,
 				LR.radio_climate, LR.pol, LR.conf, LR.rel, loss,
 				strmode, errnum);
 
-			site_set_lat(temp, path.lat[y]);
-			site_set_lon(temp, path.lon[y]);
+			site_set_pos(temp, path.lat[y], path.lon[y], 0.0);
 
 			azimuth=(Azimuth(source,temp));
 
@@ -2980,9 +2970,7 @@ void PlotLOSMap(site_t * source, double altitude)
 		if (lon>=360.0)
 			lon-=360.0;
 
-		site_set_lat(edge, max_north);
-		site_set_lat(edge, lon);
-		site_set_alt(edge, altitude);
+		site_set_pos(edge, max_north, lon, altitude);
 
 		PlotPath(source,edge,mask_value);
 		count++;
@@ -3008,9 +2996,7 @@ void PlotLOSMap(site_t * source, double altitude)
 
 	for (lat=maxnorth, x=0, y=0; lat>=(double)min_north; y++, lat=maxnorth-(dpp*(double)y))
 	{
-		site_set_lat(edge, lat);
-		site_set_lat(edge, min_west);
-		site_set_alt(edge, altitude);
+		site_set_pos(edge, lat, min_west, altitude);
 
 		PlotPath(source,edge,mask_value);
 		count++;
@@ -3039,9 +3025,7 @@ void PlotLOSMap(site_t * source, double altitude)
 		if (lon>=360.0)
 			lon-=360.0;
 
-		site_set_lat(edge, min_north);
-		site_set_lat(edge, lon);
-		site_set_alt(edge, altitude);
+		site_set_pos(edge, min_north, lon, altitude);
 
 		PlotPath(source,edge,mask_value);
 		count++;
@@ -3067,9 +3051,7 @@ void PlotLOSMap(site_t * source, double altitude)
 
 	for (lat=(double)min_north, x=0, y=0; lat<(double)max_north; y++, lat=(double)min_north+(dpp*(double)y))
 	{
-		site_set_lat(edge, lat);
-		site_set_lat(edge, max_west);
-		site_set_alt(edge, altitude);
+		site_set_pos(edge, lat, max_west, altitude);
 
 		PlotPath(source,edge,mask_value);
 		count++;
@@ -3181,9 +3163,7 @@ void PlotLRMap(site_t * source, double altitude, char *plo_filename)
 		if (lon>=360.0)
 			lon-=360.0;
 
-		site_set_lat(edge, max_north);
-		site_set_lon(edge, lon);
-		site_set_alt(edge, altitude);
+		site_set_pos(edge, max_north, lon, altitude);
 
 		PlotLRPath(source,edge,mask_value,fd);
 		count++;
@@ -3209,9 +3189,7 @@ void PlotLRMap(site_t * source, double altitude, char *plo_filename)
 
 	for (lat=maxnorth, x=0, y=0; lat>=(double)min_north; y++, lat=maxnorth-(dpp*(double)y))
 	{
-		site_set_lat(edge, lat);
-		site_set_lon(edge, min_west);
-		site_set_alt(edge, altitude);
+		site_set_pos(edge, lat, min_west, altitude);
 
 		PlotLRPath(source,edge,mask_value,fd);
 		count++;
@@ -3240,9 +3218,7 @@ void PlotLRMap(site_t * source, double altitude, char *plo_filename)
 		if (lon>=360.0)
 			lon-=360.0;
 
-		site_set_lat(edge, min_north);
-		site_set_lon(edge, lon);
-		site_set_alt(edge, altitude);
+		site_set_pos(edge, min_north, lon, altitude);
 
 		PlotLRPath(source,edge,mask_value,fd);
 		count++;
@@ -3268,9 +3244,7 @@ void PlotLRMap(site_t * source, double altitude, char *plo_filename)
 
 	for (lat=(double)min_north, x=0, y=0; lat<(double)max_north; y++, lat=(double)min_north+(dpp*(double)y))
 	{
-		site_set_lat(edge, lat);
-		site_set_lon(edge, max_west);
-		site_set_alt(edge, altitude);
+		site_set_pos(edge, lat, max_west, altitude);
 
 		PlotLRPath(source,edge,mask_value,fd);
 		count++;
@@ -5844,20 +5818,19 @@ void GraphElevation(site_t * source, site_t * destination, char *name)
 
 	for (x=1; x<path.length-1; x++)
 	{
-		site_set_lat(remote, path.lat[x]);
-		site_set_lon(remote, path.lon[x]);
-		site_set_alt(remote, 0.0);
+		site_set_pos(remote, path.lat[x], path.lon[x], 0.0);
 		angle=ElevationAngle(destination,remote);
 
 		if (clutter>0.0)
 		{
-			site_set_lat(remote2, path.lat[x]);
-			site_set_lon(remote2, path.lon[x]);
+			double alt;
 
 			if (path.elevation[x]!=0.0)
-				site_set_alt(remote2, clutter);
+				alt = clutter;
 			else
-				site_set_alt(remote2, 0.0);
+				alt = 0.0;
+			
+			site_set_pos(remote2, path.lat[x], path.lon[x], alt);
 
 			clutter_angle=ElevationAngle(destination,remote2);
 		}
@@ -6081,9 +6054,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 
 	for (x=0; x<path.length-1; x++)
 	{
-		site_set_lat(remote, path.lat[x]);
-		site_set_lon(remote, path.lon[x]);
-		site_set_alt(remote, 0.0);
+		site_set_pos(remote, path.lat[x], path.lon[x], 0.0);
 
 		terrain=GetElevation(remote);
 
@@ -6460,9 +6431,7 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 
 	for (x=path.length-1; x>0; x--)
 	{
-		site_set_lat(site_x, path.lat[x]);
-		site_set_lon(site_x, path.lon[x]);
-		site_set_alt(site_x, 0.0);
+		site_set_pos(site_x, path.lat[x], path.lon[x], 0.0);
 
 		h_x=GetElevation(site_x)+earthradius+clutter;
 		d_x=5280.0*Distance(rcvr,site_x);
@@ -7821,8 +7790,7 @@ int main(int argc, char *argv[])
 	fzone_clearance=0.6;
 	contour_threshold=0;
 	rx_site = site_alloc();
-	site_set_lat(rx_site, 91.0);
-	site_set_lon(rx_site, 361.0);
+	site_set_pos(rx_site, 91.0, 361.0, 0.0);
 	longley_file[0]=0;
 	ano_filename[0]=0;
 	ani_filename[0]=0;
@@ -7839,8 +7807,7 @@ int main(int argc, char *argv[])
 	for (x=0; x<4; x++)
 	{
 		tx_site[x] = site_alloc();
-		site_set_lat(tx_site[x], 91.0);
-		site_set_lon(tx_site[x], 361.0);
+		site_set_pos(tx_site[x], 91.0, 361.0, 0.0);
 	}
 
 	for (x=0; x<MAXPAGES; x++)

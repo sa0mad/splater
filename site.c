@@ -72,6 +72,13 @@ double	site_get_alt(site_t * site)
 	return site->alt;
 }
 
+void	site_set_pos(site_t * site, double lat, double lon, double alt)
+{
+	site->lat = lat;
+	site->lon = lon;
+	site->alt = alt;
+}
+
 void	site_set_filename(site_t * site, char * filename)
 {
 	site->filename = filename;
