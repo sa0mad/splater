@@ -47,9 +47,14 @@ void	site_set_lat(site_t * site, double lat)
 	site->lat = lat;
 }
 
-double	site_get_lat(site_t * site)
+double	site_get_lat_deg(site_t * site)
 {
 	return site->lat;
+}
+
+double	site_get_lat_rad(site_t * site)
+{
+	return site->lat*DEG2RAD;
 }
 
 void	site_set_lon(site_t * site, double lon)
@@ -57,9 +62,14 @@ void	site_set_lon(site_t * site, double lon)
 	site->lon = lon;
 }
 
-double	site_get_lon(site_t * site)
+double	site_get_lon_deg(site_t * site)
 {
 	return site->lon;
+}
+
+double	site_get_lon_rad(site_t * site)
+{
+	return site->lon*DEG2RAD;
 }
 
 void	site_set_alt(site_t * site, double alt)

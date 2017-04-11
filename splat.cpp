@@ -326,8 +326,8 @@ double GetElevation(site_t * location)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0;)
 	{
-		x=(int)rint(ppd*(site_get_lat(location)-dem[indx].min_north));
-		y=mpi-(int)rint(ppd*(LonDiff(dem[indx].max_west,site_get_lon(location))));
+		x=(int)rint(ppd*(site_get_lat_deg(location)-dem[indx].min_north));
+		y=mpi-(int)rint(ppd*(LonDiff(dem[indx].max_west,site_get_lon_deg(location))));
 
 		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
 			found=1;
@@ -377,10 +377,10 @@ double Distance(site_t * site1, site_t * site2)
 
 	double	lat1, lon1, lat2, lon2, distance;
 
-	lat1=site_get_lat(site1)*DEG2RAD;
-	lon1=site_get_lon(site1)*DEG2RAD;
-	lat2=site_get_lat(site2)*DEG2RAD;
-	lon2=site_get_lon(site2)*DEG2RAD;
+	lat1=site_get_lat_rad(site1);
+	lon1=site_get_lon_rad(site1);
+	lat2=site_get_lat_rad(site2);
+	lon2=site_get_lon_rad(site2);
 
 	distance=3959.0*acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos((lon1)-(lon2)));
 
@@ -395,12 +395,12 @@ double Azimuth(site_t * source, site_t * destination)
 	double	dest_lat, dest_lon, src_lat, src_lon,
 		beta, azimuth, diff, num, den, fraction;
 
-	dest_lat=site_get_lat(destination)*DEG2RAD;
-	dest_lon=site_get_lon(destination)*DEG2RAD;
+	dest_lat=site_get_lat_rad(destination);
+	dest_lon=site_get_lon_rad(destination);
 
-	src_lat=site_get_lat(source)*DEG2RAD;
-	src_lon=site_get_lon(source)*DEG2RAD;
-		
+	src_lat=site_get_lat_rad(source);
+	src_lon=site_get_lon_rad(source);
+
 	/* Calculate Surface Distance */
 
 	beta=acos(sin(src_lat)*sin(dest_lat)+cos(src_lat)*cos(dest_lat)*cos(src_lon-dest_lon));
@@ -476,11 +476,11 @@ void ReadPath(site_t * source, site_t * destination)
 
 	tempsite = site_alloc();
 
-	lat1=site_get_lat(source)*DEG2RAD;
-	lon1=site_get_lon(source)*DEG2RAD;
+	lat1=site_get_lat_rad(source);
+	lon1=site_get_lon_rad(source);
 
-	lat2=site_get_lat(destination)*DEG2RAD;
-	lon2=site_get_lon(destination)*DEG2RAD;
+	lat2=site_get_lat_rad(destination);
+	lon2=site_get_lon_rad(destination);
 
 	if (ppd==1200.0)
 		samples_per_radian=68755.0;
@@ -564,8 +564,8 @@ void ReadPath(site_t * source, site_t * destination)
 
 	if (c<ARRAYSIZE)
 	{
-		path.lat[c]=site_get_lat(destination);
-		path.lon[c]=site_get_lon(destination);
+		path.lat[c]=site_get_lat_deg(destination);
+		path.lon[c]=site_get_lon_deg(destination);
 		path.elevation[c]=GetElevation(destination);
 		path.distance[c]=total_distance;
 		c++;
@@ -664,8 +664,8 @@ double AverageTerrain(site_t * source, double azimuthx, double start_distance, d
 
 	destination = site_alloc();
 
-	lat1=site_get_lat(source)*DEG2RAD;
-	lon1=site_get_lon(source)*DEG2RAD;
+	lat1=site_get_lat_rad(source);
+	lon1=site_get_lon_rad(source);
 
 	/* Generate a path of elevations between the source
 	   location and the remote location provided. */
@@ -807,8 +807,8 @@ void PlaceMarker(site_t * location)
 	xmax=(double)max_north;
 	ymin=(double)min_west;
 	ymax=(double)max_west;
-	lat=site_get_lat(location);
-	lon=site_get_lon(location);
+	lat=site_get_lat_deg(location);
+	lon=site_get_lon_deg(location);
 
 	if (lat<xmax && lat>=xmin && (LonDiff(lon,ymax)<=0.0) && (LonDiff(lon,ymin)>=dpp))
 	{
@@ -3884,7 +3884,7 @@ void WritePPM(char *filename, unsigned char geo, unsigned char kml, unsigned cha
 			fprintf(fd,"      <Point>\n");
 			fprintf(fd,"        <extrude>1</extrude>\n");
 			fprintf(fd,"        <altitudeMode>relativeToGround</altitudeMode>\n");
-			fprintf(fd,"        <coordinates>%f,%f,%f</coordinates>\n",(site_get_lon(xmtr[x]) < 180.0 ? -site_get_lon(xmtr[x]) : 360.0-site_get_lon(xmtr[x])), site_get_lat(xmtr[x]), site_get_alt(xmtr[x]));
+			fprintf(fd,"        <coordinates>%f,%f,%f</coordinates>\n",(site_get_lon_deg(xmtr[x]) < 180.0 ? -site_get_lon_deg(xmtr[x]) : 360.0-site_get_lon_deg(xmtr[x])), site_get_lat_deg(xmtr[x]), site_get_alt(xmtr[x]));
 			fprintf(fd,"      </Point>\n");
 			fprintf(fd,"     </Placemark>\n");
 		}
@@ -4204,7 +4204,7 @@ void WritePPMLR(char *filename, unsigned char geo, unsigned char kml, unsigned c
 			fprintf(fd,"      <Point>\n");
 			fprintf(fd,"        <extrude>1</extrude>\n");
 			fprintf(fd,"        <altitudeMode>relativeToGround</altitudeMode>\n");
-			fprintf(fd,"        <coordinates>%f,%f,%f</coordinates>\n",(site_get_lon(xmtr[x]) < 180.0 ? -site_get_lon(xmtr[x]) : 360.0-site_get_lon(xmtr[x])), site_get_lat(xmtr[x]), site_get_alt(xmtr[x]));
+			fprintf(fd,"        <coordinates>%f,%f,%f</coordinates>\n",(site_get_lon_deg(xmtr[x]) < 180.0 ? -site_get_lon_deg(xmtr[x]) : 360.0-site_get_lon_deg(xmtr[x])), site_get_lat_deg(xmtr[x]), site_get_alt(xmtr[x]));
 			fprintf(fd,"      </Point>\n");
 			fprintf(fd,"     </Placemark>\n");
 		}
@@ -4682,7 +4682,7 @@ void WritePPMSS(char *filename, unsigned char geo, unsigned char kml, unsigned c
 			fprintf(fd,"      <Point>\n");
 			fprintf(fd,"        <extrude>1</extrude>\n");
 			fprintf(fd,"        <altitudeMode>relativeToGround</altitudeMode>\n");
-			fprintf(fd,"        <coordinates>%f,%f,%f</coordinates>\n",(site_get_lon(xmtr[x]) < 180.0 ? -site_get_lon(xmtr[x]) : 360.0-site_get_lon(xmtr[x])), site_get_lat(xmtr[x]), site_get_alt(xmtr[x]));
+			fprintf(fd,"        <coordinates>%f,%f,%f</coordinates>\n",(site_get_lon_deg(xmtr[x]) < 180.0 ? -site_get_lon_deg(xmtr[x]) : 360.0-site_get_lon_deg(xmtr[x])), site_get_lat_deg(xmtr[x]), site_get_alt(xmtr[x]));
 			fprintf(fd,"      </Point>\n");
 			fprintf(fd,"     </Placemark>\n");
 		}
@@ -5196,7 +5196,7 @@ void WritePPMDBM(char *filename, unsigned char geo, unsigned char kml, unsigned 
 			fprintf(fd,"      <Point>\n");
 			fprintf(fd,"        <extrude>1</extrude>\n");
 			fprintf(fd,"        <altitudeMode>relativeToGround</altitudeMode>\n");
-			fprintf(fd,"        <coordinates>%f,%f,%f</coordinates>\n",(site_get_lon(xmtr[x]) < 180.0 ? -site_get_lon(xmtr[x]) : 360.0-site_get_lon(xmtr[x])), site_get_lat(xmtr[x]), site_get_alt(xmtr[x]));
+			fprintf(fd,"        <coordinates>%f,%f,%f</coordinates>\n",(site_get_lon_deg(xmtr[x]) < 180.0 ? -site_get_lon_deg(xmtr[x]) : 360.0-site_get_lon_deg(xmtr[x])), site_get_lat_deg(xmtr[x]), site_get_alt(xmtr[x]));
 			fprintf(fd,"      </Point>\n");
 			fprintf(fd,"     </Placemark>\n");
 		}
@@ -6445,21 +6445,21 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 			if (h_r==h_r_orig)
 				fprintf(outfile,"Between %s and %s, %s detected obstructions at:\n\n",site_get_name(rcvr),site_get_name(xmtr),splat_name);
 
-			if (site_get_lat(site_x) >= 0.0)
+			if (site_get_lat_deg(site_x) >= 0.0)
 			{
 				if (metric)
-					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",site_get_lat(site_x), site_get_lon(site_x), KM_PER_MILE*(d_x/5280.0), METERS_PER_FOOT*(h_x-earthradius));
+					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",site_get_lat_deg(site_x), site_get_lon_deg(site_x), KM_PER_MILE*(d_x/5280.0), METERS_PER_FOOT*(h_x-earthradius));
 				else
-					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",site_get_lat(site_x), site_get_lon(site_x), d_x/5280.0, h_x-earthradius);
+					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",site_get_lat_deg(site_x), site_get_lon_deg(site_x), d_x/5280.0, h_x-earthradius);
 			}
 
 			else
 			{
 				if (metric)
-					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",-site_get_lat(site_x), site_get_lon(site_x), KM_PER_MILE*(d_x/5280.0), METERS_PER_FOOT*(h_x-earthradius));
+					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",-site_get_lat_deg(site_x), site_get_lon_deg(site_x), KM_PER_MILE*(d_x/5280.0), METERS_PER_FOOT*(h_x-earthradius));
 				else
 
-					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",-site_get_lat(site_x), site_get_lon(site_x), d_x/5280.0, h_x-earthradius);
+					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",-site_get_lat_deg(site_x), site_get_lon_deg(site_x), d_x/5280.0, h_x-earthradius);
 			}
 		}
 
@@ -6589,20 +6589,20 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 	fprintf(fd2,"%s\n\n",dashes);
 	fprintf(fd2,"Transmitter site: %s\n",site_get_name(source));
 
-	if (site_get_lat(source)>=0.0)
+	if (site_get_lat_deg(source)>=0.0)
 	{
-		fprintf(fd2,"Site location: %.4f North / %.4f West",site_get_lat(source), site_get_lon(source));
-		fprintf(fd2, " (%s N / ", dec2dms(site_get_lat(source)));
+		fprintf(fd2,"Site location: %.4f North / %.4f West",site_get_lat_deg(source), site_get_lon_deg(source));
+		fprintf(fd2, " (%s N / ", dec2dms(site_get_lat_deg(source)));
 	}
 
 	else
 	{
 
-		fprintf(fd2,"Site location: %.4f South / %.4f West",-site_get_lat(source), site_get_lon(source));
-		fprintf(fd2, " (%s S / ", dec2dms(site_get_lat(source)));
+		fprintf(fd2,"Site location: %.4f South / %.4f West",-site_get_lat_deg(source), site_get_lon_deg(source));
+		fprintf(fd2, " (%s S / ", dec2dms(site_get_lat_deg(source)));
 	}
 	
-	fprintf(fd2, "%s W)\n", dec2dms(site_get_lon(source)));
+	fprintf(fd2, "%s W)\n", dec2dms(site_get_lon_deg(source)));
 
 	if (metric)
 	{
@@ -6670,19 +6670,19 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 
 	fprintf(fd2,"Receiver site: %s\n",site_get_name(destination));
 
-	if (site_get_lat(destination)>=0.0)
+	if (site_get_lat_deg(destination)>=0.0)
 	{
-		fprintf(fd2,"Site location: %.4f North / %.4f West",site_get_lat(destination), site_get_lon(destination));
-		fprintf(fd2, " (%s N / ", dec2dms(site_get_lat(destination)));
+		fprintf(fd2,"Site location: %.4f North / %.4f West",site_get_lat_deg(destination), site_get_lon_deg(destination));
+		fprintf(fd2, " (%s N / ", dec2dms(site_get_lat_deg(destination)));
 	}
 
 	else
 	{
-		fprintf(fd2,"Site location: %.4f South / %.4f West",-site_get_lat(destination), site_get_lon(destination));
-		fprintf(fd2, " (%s S / ", dec2dms(site_get_lat(destination)));
+		fprintf(fd2,"Site location: %.4f South / %.4f West",-site_get_lat_deg(destination), site_get_lon_deg(destination));
+		fprintf(fd2, " (%s S / ", dec2dms(site_get_lat_deg(destination)));
 	}
 
-	fprintf(fd2, "%s W)\n", dec2dms(site_get_lon(destination)));
+	fprintf(fd2, "%s W)\n", dec2dms(site_get_lon_deg(destination)));
 
 	if (metric)
 	{
@@ -7210,19 +7210,19 @@ void SiteReport(site_t * xmtr)
 
 	fprintf(fd,"%s\n\n",dashes);
 
-	if (site_get_lat(xmtr)>=0.0)
+	if (site_get_lat_deg(xmtr)>=0.0)
 	{
-		fprintf(fd,"Site location: %.4f North / %.4f West",site_get_lat(xmtr), site_get_lon(xmtr));
-		fprintf(fd, " (%s N / ",dec2dms(site_get_lat(xmtr)));
+		fprintf(fd,"Site location: %.4f North / %.4f West",site_get_lat_deg(xmtr), site_get_lon_deg(xmtr));
+		fprintf(fd, " (%s N / ",dec2dms(site_get_lat_deg(xmtr)));
 	}
 
 	else
 	{
-		fprintf(fd,"Site location: %.4f South / %.4f West",-site_get_lat(xmtr), site_get_lon(xmtr));
-		fprintf(fd, " (%s S / ",dec2dms(site_get_lat(xmtr)));
+		fprintf(fd,"Site location: %.4f South / %.4f West",-site_get_lat_deg(xmtr), site_get_lon_deg(xmtr));
+		fprintf(fd, " (%s S / ",dec2dms(site_get_lat_deg(xmtr)));
 	}
 
-	fprintf(fd, "%s W)\n",dec2dms(site_get_lon(xmtr)));
+	fprintf(fd, "%s W)\n",dec2dms(site_get_lon_deg(xmtr)));
 
 	if (metric)
 	{
@@ -7485,12 +7485,12 @@ void WriteKML(site_t * source, site_t * destination)
 	fprintf(fd,"    <description>\n");
 	fprintf(fd,"       Transmit Site\n");
 
-	if (site_get_lat(source)>=0.0)
-		fprintf(fd,"       <BR>%s North</BR>\n",dec2dms(site_get_lat(source)));
+	if (site_get_lat_deg(source)>=0.0)
+		fprintf(fd,"       <BR>%s North</BR>\n",dec2dms(site_get_lat_deg(source)));
 	else
-		fprintf(fd,"       <BR>%s South</BR>\n",dec2dms(site_get_lat(source)));
+		fprintf(fd,"       <BR>%s South</BR>\n",dec2dms(site_get_lat_deg(source)));
 
-	fprintf(fd,"       <BR>%s West</BR>\n",dec2dms(site_get_lon(source)));
+	fprintf(fd,"       <BR>%s West</BR>\n",dec2dms(site_get_lon_deg(source)));
 
 	azimuth=Azimuth(source,destination);
 	distance=Distance(source,destination);
@@ -7518,7 +7518,7 @@ void WriteKML(site_t * source, site_t * destination)
 	fprintf(fd,"    <Point>\n");
 	fprintf(fd,"      <extrude>1</extrude>\n");
 	fprintf(fd,"      <altitudeMode>relativeToGround</altitudeMode>\n");
-	fprintf(fd,"      <coordinates>%f,%f,30</coordinates>\n",(site_get_lon(source)<180.0?-site_get_lon(source):360.0-site_get_lon(source)),site_get_lat(source));
+	fprintf(fd,"      <coordinates>%f,%f,30</coordinates>\n",(site_get_lon_deg(source)<180.0?-site_get_lon_deg(source):360.0-site_get_lon_deg(source)),site_get_lat_deg(source));
 	fprintf(fd,"    </Point>\n");
 	fprintf(fd,"</Placemark>\n");
 
@@ -7527,12 +7527,12 @@ void WriteKML(site_t * source, site_t * destination)
 	fprintf(fd,"    <description>\n");
 	fprintf(fd,"       Receive Site\n");
 
-	if (site_get_lat(destination)>=0.0)
-		fprintf(fd,"       <BR>%s North</BR>\n",dec2dms(site_get_lat(destination)));
+	if (site_get_lat_deg(destination)>=0.0)
+		fprintf(fd,"       <BR>%s North</BR>\n",dec2dms(site_get_lat_deg(destination)));
 	else
-		fprintf(fd,"       <BR>%s South</BR>\n",dec2dms(site_get_lat(destination)));
+		fprintf(fd,"       <BR>%s South</BR>\n",dec2dms(site_get_lat_deg(destination)));
 
-	fprintf(fd,"       <BR>%s West</BR>\n",dec2dms(site_get_lon(destination)));
+	fprintf(fd,"       <BR>%s West</BR>\n",dec2dms(site_get_lon_deg(destination)));
 
 	if (metric)
 		fprintf(fd,"       <BR>%.2f km",distance*KM_PER_MILE);
@@ -7557,7 +7557,7 @@ void WriteKML(site_t * source, site_t * destination)
 	fprintf(fd,"    <Point>\n");
 	fprintf(fd,"      <extrude>1</extrude>\n");
 	fprintf(fd,"      <altitudeMode>relativeToGround</altitudeMode>\n");
-	fprintf(fd,"      <coordinates>%f,%f,30</coordinates>\n",(site_get_lon(destination)<180.0?-site_get_lon(destination):360.0-site_get_lon(destination)),site_get_lat(destination));
+	fprintf(fd,"      <coordinates>%f,%f,30</coordinates>\n",(site_get_lon_deg(destination)<180.0?-site_get_lon_deg(destination):360.0-site_get_lon_deg(destination)),site_get_lat_deg(destination));
 	fprintf(fd,"    </Point>\n");
 	fprintf(fd,"</Placemark>\n");
 
@@ -7646,8 +7646,8 @@ void WriteKML(site_t * source, site_t * destination)
 	fprintf(fd,"</Placemark>\n");
 
 	fprintf(fd,"    <LookAt>\n");
-	fprintf(fd,"      <longitude>%f</longitude>\n",(site_get_lon(source)<180.0?-site_get_lon(source):360.0-site_get_lon(source)));
-	fprintf(fd,"      <latitude>%f</latitude>\n",site_get_lat(source));
+	fprintf(fd,"      <longitude>%f</longitude>\n",(site_get_lon_deg(source)<180.0?-site_get_lon_deg(source):360.0-site_get_lon_deg(source)));
+	fprintf(fd,"      <latitude>%f</latitude>\n",site_get_lat_deg(source));
 	fprintf(fd,"      <range>300.0</range>\n");
 	fprintf(fd,"      <tilt>45.0</tilt>\n");
 	fprintf(fd,"      <heading>%f</heading>\n",azimuth);
@@ -8173,7 +8173,7 @@ int main(int argc, char *argv[])
 
 	for (x=0, y=0; x<txsites; x++)
 	{
-		if (site_get_lat(tx_site[x])==91.0 && site_get_lon(tx_site[x])==361.0)
+		if (site_get_lat_deg(tx_site[x])==91.0 && site_get_lon_deg(tx_site[x])==361.0)
 		{
 			fprintf(stderr,"\n*** ERROR: Transmitter site #%d not found!",x+1);
 			y++;
@@ -8186,7 +8186,7 @@ int main(int argc, char *argv[])
 		exit (-1);
 	}
 
-	if ((coverage+LRmap+ani_filename[0])==0 && site_get_lat(rx_site)==91.0 && site_get_lon(rx_site)==361.0)
+	if ((coverage+LRmap+ani_filename[0])==0 && site_get_lat_deg(rx_site)==91.0 && site_get_lon_deg(rx_site)==361.0)
 	{
 		if (max_range!=0.0 && txsites!=0)
 		{
@@ -8306,13 +8306,13 @@ int main(int argc, char *argv[])
 	min_lat=90;
 	max_lat=-90;
 
-	min_lon=(int)floor(site_get_lon(tx_site[0]));
-	max_lon=(int)floor(site_get_lon(tx_site[0]));
+	min_lon=(int)floor(site_get_lon_deg(tx_site[0]));
+	max_lon=(int)floor(site_get_lon_deg(tx_site[0]));
 
 	for (y=0, z=0; z<txsites && z<max_txsites; z++)
 	{
-		txlat=(int)floor(site_get_lat(tx_site[z]));
-		txlon=(int)floor(site_get_lon(tx_site[z]));
+		txlat=(int)floor(site_get_lat_deg(tx_site[z]));
+		txlon=(int)floor(site_get_lon_deg(tx_site[z]));
 
 		if (txlat<min_lat)
 			min_lat=txlat;
@@ -8329,8 +8329,8 @@ int main(int argc, char *argv[])
 
 	if (rxsite)
 	{
-		rxlat=(int)floor(site_get_lat(rx_site));
-		rxlon=(int)floor(site_get_lon(rx_site));
+		rxlat=(int)floor(site_get_lat_deg(rx_site));
+		rxlon=(int)floor(site_get_lon_deg(rx_site));
 
 		if (rxlat<min_lat)
 			min_lat=rxlat;
@@ -8415,8 +8415,8 @@ int main(int argc, char *argv[])
 					break;
 			}
 
-			if (fabs(site_get_lat(tx_site[z]))<70.0)
-				deg_range_lon=deg_range/cos(DEG2RAD*site_get_lat(tx_site[z]));
+			if (fabs(site_get_lat_deg(tx_site[z]))<70.0)
+				deg_range_lon=deg_range/cos(DEG2RAD*site_get_lat_deg(tx_site[z]));
 			else
 				deg_range_lon=deg_range/cos(DEG2RAD*70.0);
 
@@ -8428,10 +8428,10 @@ int main(int argc, char *argv[])
 			if (deg_range_lon>deg_limit)
 				deg_range_lon=deg_limit;
 
-			north_min=(int)floor(site_get_lat(tx_site[z])-deg_range);
-			north_max=(int)floor(site_get_lat(tx_site[z])+deg_range);
+			north_min=(int)floor(site_get_lat_deg(tx_site[z])-deg_range);
+			north_max=(int)floor(site_get_lat_deg(tx_site[z])+deg_range);
 
-			west_min=(int)floor(site_get_lon(tx_site[z])-deg_range_lon);
+			west_min=(int)floor(site_get_lon_deg(tx_site[z])-deg_range_lon);
 
 			while (west_min<0)
 				west_min+=360;
@@ -8439,7 +8439,7 @@ int main(int argc, char *argv[])
 			while (west_min>=360)
 				west_min-=360;
 
-			west_max=(int)floor(site_get_lon(tx_site[z])+deg_range_lon);
+			west_max=(int)floor(site_get_lon_deg(tx_site[z])+deg_range_lon);
 
 			while (west_max<0)
 				west_max+=360;
