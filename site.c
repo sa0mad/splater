@@ -21,8 +21,6 @@ struct site {	double lat;
 		char * filename;
 	    };
 
-site_t site;
-
 site_t *	site_alloc()
 {
 	return (site_t *)malloc(sizeof(site_t));

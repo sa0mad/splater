@@ -3,8 +3,6 @@
 
 typedef struct site site_t;
 
-extern site_t site;
-
 extern	site_t *	site_alloc();
 extern	void	site_free(site_t * site);
 extern	void	site_set_name(site_t * site1, char * name);
