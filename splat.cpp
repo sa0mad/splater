@@ -36,6 +36,7 @@
 #include "global.h"
 
 #include "site.h"
+#include "dem.h"
 #include "mathextra.h"
 
 char 	string[255], sdf_path[255], opened=0, gpsav=0, splat_name[10],
@@ -50,8 +51,6 @@ int	min_north=90, max_north=-90, min_west=360, max_west=-1, ippd, mpi,
 unsigned char got_elevation_pattern, got_azimuth_pattern, metric=0, dbm=0, smooth_contours=0;
 
 path_t	path;
-
-dem_t	dem[MAXPAGES];
 
 struct LR {	double eps_dielect; 
 		double sgm_conductivity; 
@@ -200,8 +199,8 @@ int PutMask(double lat, double lon, int value)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0;)
 	{
-		x=(int)rint(ppd*(lat-dem[indx].min_north));
-		y=mpi-(int)rint(ppd*(LonDiff(dem[indx].max_west,lon)));
+		x=(int)rint(ppd*(lat-dem_get_min_north(indx)));
+		y=mpi-(int)rint(ppd*(LonDiff(dem_get_max_west(indx),lon)));
 
 		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
 			found=1;
@@ -211,8 +210,8 @@ int PutMask(double lat, double lon, int value)
 
 	if (found)
 	{
-		dem[indx].mask[x][y]=value;
-		return ((int)dem[indx].mask[x][y]);
+		dem_set_mask(indx, x, y, value);
+		return (int)dem_get_mask(indx, x, y);
 	}
 
 	else
@@ -232,8 +231,8 @@ int OrMask(double lat, double lon, int value)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0;)
 	{
-		x=(int)rint(ppd*(lat-dem[indx].min_north));
-		y=mpi-(int)rint(ppd*(LonDiff(dem[indx].max_west,lon)));
+		x=(int)rint(ppd*(lat-dem_get_min_north(indx)));
+		y=mpi-(int)rint(ppd*(LonDiff(dem_get_max_west(indx),lon)));
 
 		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
 			found=1;
@@ -243,8 +242,8 @@ int OrMask(double lat, double lon, int value)
 
 	if (found)
 	{
-		dem[indx].mask[x][y]|=value;
-		return ((int)dem[indx].mask[x][y]);
+		dem_set_mask(indx, x, y, value);
+		return (int)dem_get_mask(indx, x, y);
 	}
 
 	else
@@ -269,8 +268,8 @@ int PutSignal(double lat, double lon, unsigned char signal)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0;)
 	{
-		x=(int)rint(ppd*(lat-dem[indx].min_north));
-		y=mpi-(int)rint(ppd*(LonDiff(dem[indx].max_west,lon)));
+		x=(int)rint(ppd*(lat-dem_get_min_north(indx)));
+		y=mpi-(int)rint(ppd*(LonDiff(dem_get_max_west(indx),lon)));
 
 		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
 			found=1;
@@ -280,8 +279,8 @@ int PutSignal(double lat, double lon, unsigned char signal)
 
 	if (found)
 	{
-		dem[indx].signal[x][y]=signal;
-		return (dem[indx].signal[x][y]);
+		dem_set_signal(indx, x, y, signal);
+		return dem_get_signal(indx, x, y);
 	}
 
 	else
@@ -299,8 +298,8 @@ unsigned char GetSignal(double lat, double lon)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0;)
 	{
-		x=(int)rint(ppd*(lat-dem[indx].min_north));
-		y=mpi-(int)rint(ppd*(LonDiff(dem[indx].max_west,lon)));
+		x=(int)rint(ppd*(lat-dem_get_min_north(indx)));
+		y=mpi-(int)rint(ppd*(LonDiff(dem_get_max_west(indx),lon)));
 
 		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
 			found=1;
@@ -309,7 +308,7 @@ unsigned char GetSignal(double lat, double lon)
 	}
 
 	if (found)
-		return (dem[indx].signal[x][y]);
+		return dem_get_signal(indx, x, y);
 	else
 		return 0;
 }
@@ -326,8 +325,8 @@ double GetElevation(site_t * location)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0;)
 	{
-		x=(int)rint(ppd*(site_get_lat_deg(location)-dem[indx].min_north));
-		y=mpi-(int)rint(ppd*(LonDiff(dem[indx].max_west,site_get_lon_deg(location))));
+		x=(int)rint(ppd*(site_get_lat_deg(location)-dem_get_min_north(indx)));
+		y=mpi-(int)rint(ppd*(LonDiff(dem_get_max_west(indx),site_get_lon_deg(location))));
 
 		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
 			found=1;
@@ -336,7 +335,7 @@ double GetElevation(site_t * location)
 	}
 
 	if (found)
-		elevation=3.28084*dem[indx].data[x][y];
+		elevation=3.28084*dem_get_data(indx, x, y);
 	else
 		elevation=-5000.0;
 	
@@ -355,8 +354,8 @@ int AddElevation(double lat, double lon, double height)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0;)
 	{
-		x=(int)rint(ppd*(lat-dem[indx].min_north));
-		y=mpi-(int)rint(ppd*(LonDiff(dem[indx].max_west,lon)));
+		x=(int)rint(ppd*(lat-dem_get_min_north(indx)));
+		y=mpi-(int)rint(ppd*(LonDiff(dem_get_max_west(indx),lon)));
 
 		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
 			found=1;
@@ -365,7 +364,7 @@ int AddElevation(double lat, double lon, double height)
 	}
 
 	if (found)
-		dem[indx].data[x][y]+=(short)rint(height);
+		dem_inc_data(indx, x, y, (short)rint(height));
 
 	return found;
 }
@@ -1566,7 +1565,7 @@ int LoadSDF_SDF(char *name)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0; indx++)
 	{
-		if (minlat==dem[indx].min_north && minlon==dem[indx].min_west && maxlat==dem[indx].max_north && maxlon==dem[indx].max_west)
+		if (minlat==dem_get_min_north(indx) && minlon==dem_get_min_west(indx) && maxlat==dem_get_max_north(indx) && maxlon==dem_get_max_west(indx))
 			found=1;
 	}
 
@@ -1575,7 +1574,7 @@ int LoadSDF_SDF(char *name)
 	if (found==0)
 	{	
 		for (indx=0, free_page=0; indx<MAXPAGES && free_page==0; indx++)
-			if (dem[indx].max_north==-90)
+			if (dem_get_max_north(indx)==-90)
 				free_page=1;
 	}
 
@@ -1602,20 +1601,26 @@ int LoadSDF_SDF(char *name)
 
 		if (fd!=NULL)
 		{
+			int	val;
+			
 			fprintf(stdout,"Loading \"%s\" into page %d...",path_plus_name,indx+1);
 			fflush(stdout);
 
 			fgets(line,19,fd);
-			sscanf(line,"%d",&dem[indx].max_west);
+			sscanf(line,"%d",&val);
+			dem_set_max_west(indx, val);
 
 			fgets(line,19,fd);
-			sscanf(line,"%d",&dem[indx].min_north);
+			sscanf(line,"%d",&val);
+			dem_set_min_north(indx, val);
 
 			fgets(line,19,fd);
-			sscanf(line,"%d",&dem[indx].min_west);
+			sscanf(line,"%d",&val);
+			dem_set_min_west(indx, val);
 
 			fgets(line,19,fd);
-			sscanf(line,"%d",&dem[indx].max_north);
+			sscanf(line,"%d",&val);
+			dem_set_max_north(indx, val);
 
 			for (x=0; x<ippd; x++)
 				for (y=0; y<ippd; y++)
@@ -1623,70 +1628,70 @@ int LoadSDF_SDF(char *name)
 					fgets(line,19,fd);
 					data=atoi(line);
 
-					dem[indx].data[x][y]=data;
-					dem[indx].signal[x][y]=0;
-					dem[indx].mask[x][y]=0;
+					dem_set_data(indx, x, y, data);
+					dem_set_signal(indx, x, y, 0);
+					dem_set_mask(indx, x, y, 0);
 
-					if (data>dem[indx].max_el)
-						dem[indx].max_el=data;
+					if (data>dem_get_max_el(indx))
+						dem_set_max_el(indx, data);
 
-					if (data<dem[indx].min_el)
-						dem[indx].min_el=data;
+					if (data<dem_get_min_el(indx))
+						dem_set_min_el(indx, data);
 				}
 
 			fclose(fd);
 
-			if (dem[indx].min_el<min_elevation)
-				min_elevation=dem[indx].min_el;
+			if (dem_get_min_el(indx)<min_elevation)
+				min_elevation=dem_get_min_el(indx);
 
-			if (dem[indx].max_el>max_elevation)
-				max_elevation=dem[indx].max_el;
+			if (dem_get_max_el(indx)>max_elevation)
+				max_elevation=dem_get_max_el(indx);
 
 			if (max_north==-90)
-				max_north=dem[indx].max_north;
+				max_north=dem_get_max_north(indx);
 
-			else if (dem[indx].max_north>max_north)
-					max_north=dem[indx].max_north;
+			else if (dem_get_max_north(indx)>max_north)
+					max_north=dem_get_max_north(indx);
 
 			if (min_north==90)
-				min_north=dem[indx].min_north;
+				min_north=dem_get_min_north(indx);
 
-			else if (dem[indx].min_north<min_north)
-					min_north=dem[indx].min_north;
+			else if (dem_get_min_north(indx)<min_north)
+				min_north=dem_get_min_north(indx);
 
 			if (max_west==-1)
-				max_west=dem[indx].max_west;
+				max_west=dem_get_max_west(indx);
 
 			else
 			{
-				if (abs(dem[indx].max_west-max_west)<180)
+				if (abs(dem_get_max_west(indx)-max_west)<180)
 				{
- 					if (dem[indx].max_west>max_west)
-						max_west=dem[indx].max_west;
+ 					if (dem_get_max_west(indx) > max_west)
+						max_west=dem_get_max_west(indx);
 				}
 
 				else
 				{
- 					if (dem[indx].max_west<max_west)
-						max_west=dem[indx].max_west;
+ 					if (dem_get_max_west(indx) < max_west)
+						max_west=dem_get_max_west(indx);
 				}
 			}
 
 			if (min_west==360)
-				min_west=dem[indx].min_west;
+				min_west=dem_get_min_west(indx);
 
 			else
 			{
-				if (fabs(dem[indx].min_west-min_west)<180.0)
+				if (fabs(dem_get_min_west(indx)-min_west)<180.0)
 				{
- 					if (dem[indx].min_west<min_west)
-						min_west=dem[indx].min_west;
+ 					if (dem_get_min_west(indx) < min_west)
+						min_west=dem_get_min_west(indx);
 				}
 
 				else
 				{
- 					if (dem[indx].min_west>min_west)
-						min_west=dem[indx].min_west;
+ 					if (dem_get_min_west(indx) > min_west)
+						min_west=dem_get_min_west(indx);
 				}
 			}
 
@@ -1799,7 +1804,7 @@ int LoadSDF_BZ(char *name)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0; indx++)
 	{
-		if (minlat==dem[indx].min_north && minlon==dem[indx].min_west && maxlat==dem[indx].max_north && maxlon==dem[indx].max_west)
+		if (minlat==dem_get_min_north(indx) && minlon==dem_get_min_west(indx) && maxlat==dem_get_max_north(indx) && maxlon==dem_get_max_west(indx))
 			found=1;
 	}
 
@@ -1808,7 +1813,7 @@ int LoadSDF_BZ(char *name)
 	if (found==0)
 	{	
 		for (indx=0, free_page=0; indx<MAXPAGES && free_page==0; indx++)
-			if (dem[indx].max_north==-90)
+			if (dem_get_max_north(indx)==-90)
 				free_page=1;
 	}
 
@@ -1837,13 +1842,19 @@ int LoadSDF_BZ(char *name)
 
 		if (fd!=NULL && bzerror==BZ_OK)
 		{
+			int	val;
+			
 			fprintf(stdout,"Loading \"%s\" into page %d...",path_plus_name,indx+1);
 			fflush(stdout);
 
-			sscanf(BZfgets(bzfd,255),"%d",&dem[indx].max_west);
-			sscanf(BZfgets(bzfd,255),"%d",&dem[indx].min_north);
-			sscanf(BZfgets(bzfd,255),"%d",&dem[indx].min_west);
-			sscanf(BZfgets(bzfd,255),"%d",&dem[indx].max_north);
+			sscanf(BZfgets(bzfd,255),"%d",&val);
+			dem_set_max_west(indx, val);
+			sscanf(BZfgets(bzfd,255),"%d",&val);
+			dem_set_min_north(indx, val);
+			sscanf(BZfgets(bzfd,255),"%d",&val);
+			dem_set_min_west(indx, val);
+			sscanf(BZfgets(bzfd,255),"%d",&val);
+			dem_set_max_north(indx, val);
 	
 			for (x=0; x<ippd; x++)
 				for (y=0; y<ippd; y++)
@@ -1851,72 +1862,72 @@ int LoadSDF_BZ(char *name)
 					string=BZfgets(bzfd,20);
 					data=atoi(string);
 
-					dem[indx].data[x][y]=data;
-					dem[indx].signal[x][y]=0;
-					dem[indx].mask[x][y]=0;
+					dem_set_data(indx, x, y, data);
+					dem_set_signal(indx, x, y, 0);
+					dem_set_mask(indx, x, y, 0);
 
-					if (data>dem[indx].max_el)
-						dem[indx].max_el=data;
+					if (data>dem_get_max_el(indx))
+						dem_set_max_el(indx, data);
 
-					if (data<dem[indx].min_el)
-						dem[indx].min_el=data;
+					if (data<dem_get_min_el(indx))
+						dem_set_min_el(indx, data);
 				}
 
 			fclose(fd);
 
 			BZ2_bzReadClose(&bzerror,bzfd);
 
-			if (dem[indx].min_el<min_elevation)
-				min_elevation=dem[indx].min_el;
+			if (dem_get_min_el(indx)<min_elevation)
+				min_elevation=dem_get_min_el(indx);
 	
-			if (dem[indx].max_el>max_elevation)
-				max_elevation=dem[indx].max_el;
+			if (dem_get_max_el(indx)>max_elevation)
+				max_elevation=dem_get_max_el(indx);
 
 			if (max_north==-90)
-				max_north=dem[indx].max_north;
+				max_north=dem_get_max_north(indx);
 
-			else if (dem[indx].max_north>max_north)
-					max_north=dem[indx].max_north;
+			else if (dem_get_max_north(indx)>max_north)
+					max_north=dem_get_max_north(indx);
 
 			if (min_north==90)
-				min_north=dem[indx].min_north;
+				min_north=dem_get_min_north(indx);
 
-			else if (dem[indx].min_north<min_north)
-					min_north=dem[indx].min_north;
+			else if (dem_get_min_north(indx)<min_north)
+				min_north=dem_get_min_north(indx);
 
 			if (max_west==-1)
-				max_west=dem[indx].max_west;
+				max_west=dem_get_max_west(indx);
 
 			else
 			{
-				if (abs(dem[indx].max_west-max_west)<180)
+				if (abs(dem_get_max_west(indx)-max_west)<180)
 				{
- 					if (dem[indx].max_west>max_west)
-						max_west=dem[indx].max_west;
+ 					if (dem_get_max_west(indx) > max_west)
+						max_west=dem_get_max_west(indx);
 				}
 
 				else
 				{
- 					if (dem[indx].max_west<max_west)
-						max_west=dem[indx].max_west;
+ 					if (dem_get_max_west(indx) < max_west)
+						max_west=dem_get_max_west(indx);
 				}
 			}
 
 			if (min_west==360)
-				min_west=dem[indx].min_west;
+				min_west=dem_get_min_west(indx);
 
 			else
 			{
-				if (abs(dem[indx].min_west-min_west)<180)
+				if (abs(dem_get_min_west(indx)-min_west)<180)
 				{
- 					if (dem[indx].min_west<min_west)
-						min_west=dem[indx].min_west;
+ 					if (dem_get_min_west(indx) < min_west)
+						min_west=dem_get_min_west(indx);
 				}
 
 				else
 				{
- 					if (dem[indx].min_west>min_west)
-						min_west=dem[indx].min_west;
+ 					if (dem_get_min_west(indx) > min_west)
+						min_west=dem_get_min_west(indx);
 				}
 			}
 
@@ -1970,7 +1981,7 @@ char LoadSDF(char *name)
 
 		for (indx=0, found=0; indx<MAXPAGES && found==0; indx++)
 		{
-			if (minlat==dem[indx].min_north && minlon==dem[indx].min_west && maxlat==dem[indx].max_north && maxlon==dem[indx].max_west)
+			if (minlat==dem_get_min_north(indx) && minlon==dem_get_min_west(indx) && maxlat==dem_get_max_north(indx) && maxlon==dem_get_max_west(indx))
 				found=1;
 		}
 
@@ -1979,7 +1990,7 @@ char LoadSDF(char *name)
 		if (found==0)
 		{	
 			for (indx=0, free_page=0; indx<MAXPAGES && free_page==0; indx++)
-				if (dem[indx].max_north==-90)
+				if (dem_get_max_north(indx)==-90)
 					free_page=1;
 		}
 
@@ -1990,75 +2001,75 @@ char LoadSDF(char *name)
 			fprintf(stdout,"Region  \"%s\" assumed as sea-level into page %d...",name,indx+1);
 			fflush(stdout);
 
-			dem[indx].max_west=maxlon;
-			dem[indx].min_north=minlat;
-			dem[indx].min_west=minlon;
-			dem[indx].max_north=maxlat;
-
+			dem_set_max_west(indx, maxlon);
+			dem_set_min_north(indx, minlat);
+			dem_set_min_west(indx, minlon);
+			dem_set_max_north(indx, maxlat);
+			
 			/* Fill DEM with sea-level topography */
 
 			for (x=0; x<ippd; x++)
 				for (y=0; y<ippd; y++)
 				{
-		    			dem[indx].data[x][y]=0;
-					dem[indx].signal[x][y]=0;
-					dem[indx].mask[x][y]=0;
+		    			dem_set_data(indx, x, y, 0);
+					dem_set_signal(indx, x, y, 0);
+					dem_set_mask(indx, x, y, 0);
 
-					if (dem[indx].min_el>0)
-						dem[indx].min_el=0;
+					if (dem_get_min_el(indx)>0)
+						dem_set_min_el(indx, 0);
 				}
 
-			if (dem[indx].min_el<min_elevation)
-				min_elevation=dem[indx].min_el;
+			if (dem_get_min_el(indx)<min_elevation)
+				min_elevation=dem_get_min_el(indx);
 
-			if (dem[indx].max_el>max_elevation)
-				max_elevation=dem[indx].max_el;
+			if (dem_get_max_el(indx)>max_elevation)
+				max_elevation=dem_get_max_el(indx);
 
 			if (max_north==-90)
-				max_north=dem[indx].max_north;
+				max_north=dem_get_max_north(indx);
 
-			else if (dem[indx].max_north>max_north)
-					max_north=dem[indx].max_north;
+			else if (dem_get_max_north(indx)>max_north)
+					max_north=dem_get_max_north(indx);
 
 			if (min_north==90)
-				min_north=dem[indx].min_north;
+				min_north=dem_get_min_north(indx);
 
-			else if (dem[indx].min_north<min_north)
-					min_north=dem[indx].min_north;
+			else if (dem_get_min_north(indx)<min_north)
+				min_north=dem_get_min_north(indx);
 
 			if (max_west==-1)
-				max_west=dem[indx].max_west;
+				max_west=dem_get_max_west(indx);
 
 			else
 			{
-				if (abs(dem[indx].max_west-max_west)<180)
+				if (abs(dem_get_max_west(indx)-max_west)<180)
 				{
- 					if (dem[indx].max_west>max_west)
-						max_west=dem[indx].max_west;
+ 					if (dem_get_max_west(indx) > max_west)
+						max_west=dem_get_max_west(indx);
 				}
 
 				else
 				{
- 					if (dem[indx].max_west<max_west)
-						max_west=dem[indx].max_west;
+ 					if (dem_get_max_west(indx) < max_west)
+						max_west=dem_get_max_west(indx);
 				}
 			}
 
 			if (min_west==360)
-				min_west=dem[indx].min_west;
+				min_west=dem_get_min_west(indx);
 
 			else
 			{
-				if (abs(dem[indx].min_west-min_west)<180)
+				if (abs(dem_get_min_west(indx)-min_west)<180)
 				{
- 					if (dem[indx].min_west<min_west)
-						min_west=dem[indx].min_west;
+ 					if (dem_get_min_west(indx) < min_west)
+						min_west=dem_get_min_west(indx);
 				}
 
 				else
 				{
- 					if (dem[indx].min_west>min_west)
-						min_west=dem[indx].min_west;
+ 					if (dem_get_min_west(indx) > min_west)
+						min_west=dem_get_min_west(indx);
 				}
 			}
 
@@ -3910,8 +3921,8 @@ void WritePPM(char *filename, unsigned char geo, unsigned char kml, unsigned cha
 
 			for (indx=0, found=0; indx<MAXPAGES && found==0;)
 			{
-				x0=(int)rint(ppd*(lat-(double)dem[indx].min_north));
-				y0=mpi-(int)rint(ppd*(LonDiff((double)dem[indx].max_west,lon)));
+				x0=(int)rint(ppd*(lat-(double)dem_get_min_north(indx)));
+				y0=mpi-(int)rint(ppd*(LonDiff((double)dem_get_max_west(indx),lon)));
 
 				if (x0>=0 && x0<=mpi && y0>=0 && y0<=mpi)
 					found=1;
@@ -3921,7 +3932,7 @@ void WritePPM(char *filename, unsigned char geo, unsigned char kml, unsigned cha
 
 			if (found)
 			{
-				mask=dem[indx].mask[x0][y0];
+				mask=dem_get_mask(indx, x0, y0);
 
 				if (mask&2)
 					/* Text Labels: Red */
@@ -4014,12 +4025,12 @@ void WritePPM(char *filename, unsigned char geo, unsigned char kml, unsigned cha
 					else
 					{
 						/* Sea-level: Medium Blue */
-						if (dem[indx].data[x0][y0]==0)
+						if (dem_get_data(indx, x0, y0) == 0)
 							fprintf(fd,"%c%c%c",0,0,170);
 						else
 						{
 							/* Elevation: Greyscale */
-							terrain=(unsigned)(0.5+pow((double)(dem[indx].data[x0][y0]-min_elevation),one_over_gamma)*conversion);
+							terrain=(unsigned)(0.5+pow((double)(dem_get_data(indx, x0, y0)-min_elevation),one_over_gamma)*conversion);
 							fprintf(fd,"%c%c%c",terrain,terrain,terrain);
 						}
 					}
@@ -4244,8 +4255,8 @@ void WritePPMLR(char *filename, unsigned char geo, unsigned char kml, unsigned c
 
 			for (indx=0, found=0; indx<MAXPAGES && found==0;)
 			{
-				x0=(int)rint(ppd*(lat-(double)dem[indx].min_north));
-				y0=mpi-(int)rint(ppd*(LonDiff((double)dem[indx].max_west,lon)));
+				x0=(int)rint(ppd*(lat-(double)dem_get_min_north(indx)));
+				y0=mpi-(int)rint(ppd*(LonDiff((double)dem_get_max_west(indx),lon)));
 
 				if (x0>=0 && x0<=mpi && y0>=0 && y0<=mpi)
 					found=1;
@@ -4255,8 +4266,8 @@ void WritePPMLR(char *filename, unsigned char geo, unsigned char kml, unsigned c
 
 			if (found)
 			{
-				mask=dem[indx].mask[x0][y0];
-				loss=(dem[indx].signal[x0][y0]);
+				mask=dem_get_mask(indx, x0, y0);
+				loss=dem_get_signal(indx, x0, y0);
 				cityorcounty=0;
 
 				match=255;
@@ -4324,11 +4335,11 @@ void WritePPMLR(char *filename, unsigned char geo, unsigned char kml, unsigned c
 						{
 							/* Display land or sea elevation */
 
-							if (dem[indx].data[x0][y0]==0)
+							if (dem_get_data(indx, x0, y0) == 0)
 								fprintf(fd,"%c%c%c",0,0,170);
 							else
 							{
-								terrain=(unsigned)(0.5+pow((double)(dem[indx].data[x0][y0]-min_elevation),one_over_gamma)*conversion);
+								terrain=(unsigned)(0.5+pow((double)(dem_get_data(indx, x0, y0)-min_elevation),one_over_gamma)*conversion);
 								fprintf(fd,"%c%c%c",terrain,terrain,terrain);
 							}
 						}
@@ -4343,12 +4354,12 @@ void WritePPMLR(char *filename, unsigned char geo, unsigned char kml, unsigned c
 
 						else  /* terrain / sea-level */
 						{
-							if (dem[indx].data[x0][y0]==0)
+							if (dem_get_data(indx, x0, y0) ==0)
 								fprintf(fd,"%c%c%c",0,0,170);
 							else
 							{
 								/* Elevation: Greyscale */
-								terrain=(unsigned)(0.5+pow((double)(dem[indx].data[x0][y0]-min_elevation),one_over_gamma)*conversion);
+								terrain=(unsigned)(0.5+pow((double)(dem_get_data(indx, x0, y0)-min_elevation),one_over_gamma)*conversion);
 								fprintf(fd,"%c%c%c",terrain,terrain,terrain);
 							}
 						}
@@ -4722,8 +4733,8 @@ void WritePPMSS(char *filename, unsigned char geo, unsigned char kml, unsigned c
 
 			for (indx=0, found=0; indx<MAXPAGES && found==0;)
 			{
-				x0=(int)rint(ppd*(lat-(double)dem[indx].min_north));
-				y0=mpi-(int)rint(ppd*(LonDiff((double)dem[indx].max_west,lon)));
+				x0=(int)rint(ppd*(lat-(double)dem_get_min_north(indx)));
+				y0=mpi-(int)rint(ppd*(LonDiff((double)dem_get_max_west(indx),lon)));
 
 				if (x0>=0 && x0<=mpi && y0>=0 && y0<=mpi)
 					found=1;
@@ -4733,8 +4744,8 @@ void WritePPMSS(char *filename, unsigned char geo, unsigned char kml, unsigned c
 
 			if (found)
 			{
-				mask=dem[indx].mask[x0][y0];
-				signal=(dem[indx].signal[x0][y0])-100;
+				mask=dem_get_mask(indx, x0, y0);
+				signal=dem_get_signal(indx, x0, y0)-100;
 				cityorcounty=0;
 
 				match=255;
@@ -4802,11 +4813,11 @@ void WritePPMSS(char *filename, unsigned char geo, unsigned char kml, unsigned c
 						{
 							/* Display land or sea elevation */
 
-							if (dem[indx].data[x0][y0]==0)
+							if (dem_get_data(indx, x0, y0) ==0)
 								fprintf(fd,"%c%c%c",0,0,170);
 							else
 							{
-								terrain=(unsigned)(0.5+pow((double)(dem[indx].data[x0][y0]-min_elevation),one_over_gamma)*conversion);
+								terrain=(unsigned)(0.5+pow((double)(dem_get_data(indx, x0, y0)-min_elevation),one_over_gamma)*conversion);
 								fprintf(fd,"%c%c%c",terrain,terrain,terrain);
 							}
 						}
@@ -4825,12 +4836,12 @@ void WritePPMSS(char *filename, unsigned char geo, unsigned char kml, unsigned c
 								fprintf(fd,"%c%c%c",255,255,255);
 							else
 							{
-								if (dem[indx].data[x0][y0]==0)
+								if (dem_get_data(indx, x0, y0) == 0)
 									fprintf(fd,"%c%c%c",0,0,170);
 								else
 								{
 									/* Elevation: Greyscale */
-									terrain=(unsigned)(0.5+pow((double)(dem[indx].data[x0][y0]-min_elevation),one_over_gamma)*conversion);
+									terrain=(unsigned)(0.5+pow((double)(dem_get_data(indx, x0, y0)-min_elevation),one_over_gamma)*conversion);
 									fprintf(fd,"%c%c%c",terrain,terrain,terrain);
 								}
 							}
@@ -5236,8 +5247,8 @@ void WritePPMDBM(char *filename, unsigned char geo, unsigned char kml, unsigned 
 
 			for (indx=0, found=0; indx<MAXPAGES && found==0;)
 			{
-				x0=(int)rint(ppd*(lat-(double)dem[indx].min_north));
-				y0=mpi-(int)rint(ppd*(LonDiff((double)dem[indx].max_west,lon)));
+				x0=(int)rint(ppd*(lat-(double)dem_get_min_north(indx)));
+				y0=mpi-(int)rint(ppd*(LonDiff((double)dem_get_max_west(indx),lon)));
 
 				if (x0>=0 && x0<=mpi && y0>=0 && y0<=mpi)
 					found=1;
@@ -5247,8 +5258,8 @@ void WritePPMDBM(char *filename, unsigned char geo, unsigned char kml, unsigned 
 
 			if (found)
 			{
-				mask=dem[indx].mask[x0][y0];
-				dBm=(dem[indx].signal[x0][y0])-200;
+				mask=dem_get_mask(indx, x0, y0);
+				dBm=dem_get_signal(indx, x0, y0)-200;
 				cityorcounty=0;
 
 				match=255;
@@ -5316,11 +5327,11 @@ void WritePPMDBM(char *filename, unsigned char geo, unsigned char kml, unsigned 
 						{
 							/* Display land or sea elevation */
 
-							if (dem[indx].data[x0][y0]==0)
+							if (dem_get_data(indx, x0, y0) == 0)
 								fprintf(fd,"%c%c%c",0,0,170);
 							else
 							{
-								terrain=(unsigned)(0.5+pow((double)(dem[indx].data[x0][y0]-min_elevation),one_over_gamma)*conversion);
+								terrain=(unsigned)(0.5+pow((double)(dem_get_data(indx, x0, y0)-min_elevation),one_over_gamma)*conversion);
 								fprintf(fd,"%c%c%c",terrain,terrain,terrain);
 							}
 						}
@@ -5339,12 +5350,12 @@ void WritePPMDBM(char *filename, unsigned char geo, unsigned char kml, unsigned 
 								fprintf(fd,"%c%c%c",255,255,255);
 							else
 							{
-								if (dem[indx].data[x0][y0]==0)
+								if (dem_get_data(indx, x0, y0) == 0)
 									fprintf(fd,"%c%c%c",0,0,170);
 								else
 								{
 									/* Elevation: Greyscale */
-									terrain=(unsigned)(0.5+pow((double)(dem[indx].data[x0][y0]-min_elevation),one_over_gamma)*conversion);
+									terrain=(unsigned)(0.5+pow((double)(dem_get_data(indx, x0, y0)-min_elevation),one_over_gamma)*conversion);
 									fprintf(fd,"%c%c%c",terrain,terrain,terrain);
 								}
 							}
@@ -7812,12 +7823,12 @@ int main(int argc, char *argv[])
 
 	for (x=0; x<MAXPAGES; x++)
 	{
-		dem[x].min_el=32768;
-		dem[x].max_el=-32768;
-		dem[x].min_north=90;
-		dem[x].max_north=-90;
-		dem[x].min_west=360;
-		dem[x].max_west=-1;
+		dem_set_min_el(x, 32768);
+		dem_set_max_el(x, -32768);
+		dem_set_min_north(x, 90);
+		dem_set_max_north(x, -90);
+		dem_set_min_west(x, 360);
+		dem_set_max_west(x, -1);
 	}
 
 	/* Scan for command line arguments */

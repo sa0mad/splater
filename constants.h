@@ -1,6 +1,7 @@
 #ifndef __SPLAT_CONSTANTS_H
 #define __SPLAT_CONSTANTS_H
 
+#include "splat.h"
 
 #define GAMMA 2.5
 #define BZBUFFER 65536

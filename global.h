@@ -23,21 +23,6 @@ struct path {	double lat[ARRAYSIZE];
 
 extern path_t	path;
 
-typedef struct dem dem_t;
-
-struct dem {	int min_north;
-		int max_north;
-		int min_west;
-		int max_west;
-		int max_el;
-		int min_el;
-		short data[IPPD][IPPD];
-		unsigned char mask[IPPD][IPPD];
-		unsigned char signal[IPPD][IPPD];
-           };
-
-extern dem_t dem[MAXPAGES];
-
 extern int OrMask(double lat, double lon, int value);
 extern int GetMask(double lat, double lon);
 extern double LonDiff(double lon1, double lon2);

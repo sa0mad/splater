@@ -3,7 +3,7 @@ all: splat splat-hd
 CPU=x86_64
 MODEL=-mcmodel=medium
 
-SPLATFILES=itwom3.0.cpp splat.cpp mathextra.c site.c
+SPLATFILES=itwom3.0.cpp splat.cpp mathextra.c site.c dem.c
 
 std-parms.h:
 	echo "/* Parameters for 3 arc-second standard resolution mode of operation */" > std-parms.h
