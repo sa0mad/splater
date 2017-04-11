@@ -42,11 +42,21 @@
 char 	string[255], sdf_path[255], opened=0, gpsav=0, splat_name[10],
 	splat_version[6], dashes[80], olditm;
 
-double	earthradius, max_range=0.0, forced_erp=-1.0, dpp, ppd,
+double	earthradius, max_range=0.0, forced_erp=-1.0,
 	fzone_clearance=0.6, forced_freq, clutter;
 
-int	min_north=90, max_north=-90, min_west=360, max_west=-1, ippd, mpi,
+int	min_north=90, max_north=-90, min_west=360, max_west=-1,
 	max_elevation=-32768, min_elevation=32768, bzerror, contour_threshold;
+
+// Pixels per degree (integer and double)
+int	ippd;
+double	ppd;
+
+// Degrees per pixel
+double	dpp;
+
+// Maximum pixel index per degree
+int	mpi;
 
 unsigned char got_elevation_pattern, got_azimuth_pattern, metric=0, dbm=0, smooth_contours=0;
 
@@ -1602,6 +1612,7 @@ int LoadSDF_SDF(char *name)
 		if (fd!=NULL)
 		{
 			int	val;
+			int	ippd;
 			
 			fprintf(stdout,"Loading \"%s\" into page %d...",path_plus_name,indx+1);
 			fflush(stdout);
@@ -1622,6 +1633,7 @@ int LoadSDF_SDF(char *name)
 			sscanf(line,"%d",&val);
 			dem_set_max_north(indx, val);
 
+			ippd = dem_get_ippd(indx);
 			for (x=0; x<ippd; x++)
 				for (y=0; y<ippd; y++)
 				{
@@ -1843,6 +1855,7 @@ int LoadSDF_BZ(char *name)
 		if (fd!=NULL && bzerror==BZ_OK)
 		{
 			int	val;
+			int	ippd;
 			
 			fprintf(stdout,"Loading \"%s\" into page %d...",path_plus_name,indx+1);
 			fflush(stdout);
@@ -1855,7 +1868,8 @@ int LoadSDF_BZ(char *name)
 			dem_set_min_west(indx, val);
 			sscanf(BZfgets(bzfd,255),"%d",&val);
 			dem_set_max_north(indx, val);
-	
+
+			ippd = dem_get_ippd(indx);
 			for (x=0; x<ippd; x++)
 				for (y=0; y<ippd; y++)
 				{
@@ -1998,6 +2012,8 @@ char LoadSDF(char *name)
 
 		if (free_page && found==0 && indx>=0 && indx<MAXPAGES)
 		{
+			int	ippd;
+			
 			fprintf(stdout,"Region  \"%s\" assumed as sea-level into page %d...",name,indx+1);
 			fflush(stdout);
 
@@ -2008,6 +2024,7 @@ char LoadSDF(char *name)
 			
 			/* Fill DEM with sea-level topography */
 
+			ippd = dem_get_ippd(indx);
 			for (x=0; x<ippd; x++)
 				for (y=0; y<ippd; y++)
 				{
@@ -7823,6 +7840,7 @@ int main(int argc, char *argv[])
 
 	for (x=0; x<MAXPAGES; x++)
 	{
+		dem_set_ippd(x, IPPD);
 		dem_set_min_el(x, 32768);
 		dem_set_max_el(x, -32768);
 		dem_set_min_north(x, 90);

@@ -5,6 +5,8 @@ typedef struct dem dem_t;
 
 extern dem_t dem[MAXPAGES];
 
+extern	void	dem_set_ippd(int indx, int ippd);
+extern	int	dem_get_ippd(int indx);
 extern	void	dem_set_min_north(int indx, int min_north);
 extern	int	dem_get_min_north(int indx);
 extern	void	dem_set_max_north(int indx, int max_north);

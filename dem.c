@@ -7,6 +7,7 @@
 #include "dem.h"
 
 struct dem {
+	int ippd;
 	int min_north;
 	int max_north;
 	int min_west;
@@ -19,6 +20,16 @@ struct dem {
 };
 
 dem_t	dem[MAXPAGES];
+
+void	dem_set_ippd(int indx, int ippd)
+{
+	dem[indx].ippd = ippd;
+}
+
+int	dem_get_ippd(int indx)
+{
+	return dem[indx].ippd;
+}
 
 void	dem_set_min_north(int indx, int min_north)
 {
