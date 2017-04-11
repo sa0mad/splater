@@ -8416,7 +8416,7 @@ int main(int argc, char *argv[])
 			}
 
 			if (fabs(site_get_lat_deg(tx_site[z]))<70.0)
-				deg_range_lon=deg_range/cos(DEG2RAD*site_get_lat_deg(tx_site[z]));
+				deg_range_lon=deg_range/cos(site_get_lat_rad(tx_site[z]));
 			else
 				deg_range_lon=deg_range/cos(DEG2RAD*70.0);
 
