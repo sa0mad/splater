@@ -178,3 +178,25 @@ int	dem_diff_lon(int indx, double lon)
 	int mpi = ippd - 1;
 	return mpi-(int)rint(ppd*(LonDiff(dem_get_max_west(indx),lon)));
 }
+
+int	dem_find_indx(double lat, double lon, int * index, int *xp, int *yp)
+{
+	int	found;
+	int	indx, x, y;
+	for (indx=0, found=0; indx<MAXPAGES && found==0;)
+	{
+		int ippd = dem_get_ippd(indx);
+		int mpi = ippd - 1;
+		x = dem_diff_lat(indx, lat);
+		y = dem_diff_lon(indx, lon);
+
+		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
+			found=1;
+		else
+			indx++;
+	}
+	*index = indx;
+	*xp = x;
+	*yp = y;
+	return found;
+}

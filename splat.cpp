@@ -237,17 +237,7 @@ int PutMask(double lat, double lon, int value)
 	int	x, y, indx;
 	char	found;
 
-	for (indx=0, found=0; indx<MAXPAGES && found==0;)
-	{
-		x = dem_diff_lat(indx, lat);
-		y = dem_diff_lon(indx,lon);
-
-		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
-			found=1;
-		else
-			indx++;
-	}
-
+	found = dem_find_indx(lat, lon, &indx, &x, &y);
 	if (found)
 	{
 		dem_set_mask(indx, x, y, value);
@@ -269,17 +259,7 @@ int OrMask(double lat, double lon, int value)
 	int	x, y, indx;
 	char	found;
 
-	for (indx=0, found=0; indx<MAXPAGES && found==0;)
-	{
-		x = dem_diff_lat(indx, lat);
-		y = dem_diff_lat(indx, lon);
-
-		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
-			found=1;
-		else
-			indx++;
-	}
-
+	found = dem_find_indx(lat, lon, &indx, &x, &y);
 	if (found)
 	{
 		dem_set_mask(indx, x, y, value);
@@ -306,17 +286,7 @@ int PutSignal(double lat, double lon, unsigned char signal)
 	int	x, y, indx;
 	char	found;
 
-	for (indx=0, found=0; indx<MAXPAGES && found==0;)
-	{
-		x = dem_diff_lat(indx, lat);
-		y = dem_diff_lon(indx, lon);
-
-		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
-			found=1;
-		else
-			indx++;
-	}
-
+	found = dem_find_indx(lat, lon, &indx, &x, &y);
 	if (found)
 	{
 		dem_set_signal(indx, x, y, signal);
@@ -336,17 +306,7 @@ unsigned char GetSignal(double lat, double lon)
 	int	x, y, indx;
 	char	found;
 
-	for (indx=0, found=0; indx<MAXPAGES && found==0;)
-	{
-		x = dem_diff_lat(indx, lat);
-		y = dem_diff_lon(indx, lon);
-
-		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
-			found=1;
-		else
-			indx++;
-	}
-
+	found = dem_find_indx(lat, lon, &indx, &x, &y);
 	if (found)
 		return dem_get_signal(indx, x, y);
 	else
@@ -362,18 +322,11 @@ double GetElevation(site_t * location)
 	char	found;
 	int	x, y, indx;
 	double	elevation;
+	double	lat, lon;
 
-	for (indx=0, found=0; indx<MAXPAGES && found==0;)
-	{
-		x = dem_diff_lat(indx, site_get_lat_deg(location));
-		y = dem_diff_lon(indx, site_get_lon_deg(location));
-
-		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
-			found=1;
-		else
-			indx++;
-	}
-
+	lat = site_get_lat_deg(location);
+	lon = site_get_lon_deg(location);
+	found = dem_find_indx(lat, lon, &indx, &x, &y);
 	if (found)
 		elevation=3.28084*dem_get_data(indx, x, y);
 	else
@@ -392,17 +345,7 @@ int AddElevation(double lat, double lon, double height)
 	char	found;
 	int	x, y, indx;
 
-	for (indx=0, found=0; indx<MAXPAGES && found==0;)
-	{
-		x = dem_diff_lat(indx, lat);
-		y = dem_diff_lon(indx, lon);
-
-		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
-			found=1;
-		else
-			indx++;
-	}
-
+	found = dem_find_indx(lat, lon, &indx, &x, &y);
 	if (found)
 		dem_inc_data(indx, x, y, (short)rint(height));
 
@@ -3805,17 +3748,7 @@ void WritePPM(char *filename, unsigned char geo, unsigned char kml, unsigned cha
 			if (lon<0.0)
 				lon+=360.0;
 
-			for (indx=0, found=0; indx<MAXPAGES && found==0;)
-			{
-				x0 = dem_diff_lat(indx, lat);
-				y0 = dem_diff_lon(indx, lon);
-
-				if (x0>=0 && x0<=mpi && y0>=0 && y0<=mpi)
-					found=1;
-				else
-					indx++;
-			}
-
+			found = dem_find_indx(lat, lon, &indx, &x, &y);
 			if (found)
 			{
 				mask=dem_get_mask(indx, x0, y0);
@@ -4139,17 +4072,7 @@ void WritePPMLR(char *filename, unsigned char geo, unsigned char kml, unsigned c
 			if (lon<0.0)
 				lon+=360.0;
 
-			for (indx=0, found=0; indx<MAXPAGES && found==0;)
-			{
-				x0 = dem_diff_lat(indx, lat);
-				y0 = dem_diff_lon(indx, lon);
-
-				if (x0>=0 && x0<=mpi && y0>=0 && y0<=mpi)
-					found=1;
-				else
-					indx++;
-			}
-
+			found = dem_find_indx(lat, lon, &indx, &x, &y);
 			if (found)
 			{
 				mask=dem_get_mask(indx, x0, y0);
@@ -4617,17 +4540,7 @@ void WritePPMSS(char *filename, unsigned char geo, unsigned char kml, unsigned c
 			if (lon<0.0)
 				lon+=360.0;
 
-			for (indx=0, found=0; indx<MAXPAGES && found==0;)
-			{
-				x0 = dem_diff_lat(indx, lat);
-				y0 = dem_diff_lon(indx, lon);
-
-				if (x0>=0 && x0<=mpi && y0>=0 && y0<=mpi)
-					found=1;
-				else
-					indx++;
-			}
-
+			found = dem_find_indx(lat, lon, &indx, &x, &y);
 			if (found)
 			{
 				mask=dem_get_mask(indx, x0, y0);
@@ -5131,17 +5044,7 @@ void WritePPMDBM(char *filename, unsigned char geo, unsigned char kml, unsigned 
 			if (lon<0.0)
 				lon+=360.0;
 
-			for (indx=0, found=0; indx<MAXPAGES && found==0;)
-			{
-				x0 = dem_diff_lat(indx, lat);
-				y0 = dem_diff_lon(indx, lon);
-
-				if (x0>=0 && x0<=mpi && y0>=0 && y0<=mpi)
-					found=1;
-				else
-					indx++;
-			}
-
+			found = dem_find_indx(lat, lon, &indx, &x, &y);
 			if (found)
 			{
 				mask=dem_get_mask(indx, x0, y0);
