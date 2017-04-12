@@ -239,8 +239,8 @@ int PutMask(double lat, double lon, int value)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0;)
 	{
-		x=(int)rint(ppd*(lat-dem_get_min_north(indx)));
-		y=mpi-(int)rint(ppd*(LonDiff(dem_get_max_west(indx),lon)));
+		x = dem_diff_lat(indx, lat);
+		y = dem_diff_lon(indx,lon);
 
 		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
 			found=1;
@@ -271,8 +271,8 @@ int OrMask(double lat, double lon, int value)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0;)
 	{
-		x=(int)rint(ppd*(lat-dem_get_min_north(indx)));
-		y=mpi-(int)rint(ppd*(LonDiff(dem_get_max_west(indx),lon)));
+		x = dem_diff_lat(indx, lat);
+		y = dem_diff_lat(indx, lon);
 
 		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
 			found=1;
@@ -308,8 +308,8 @@ int PutSignal(double lat, double lon, unsigned char signal)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0;)
 	{
-		x=(int)rint(ppd*(lat-dem_get_min_north(indx)));
-		y=mpi-(int)rint(ppd*(LonDiff(dem_get_max_west(indx),lon)));
+		x = dem_diff_lat(indx, lat);
+		y = dem_diff_lon(indx, lon);
 
 		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
 			found=1;
@@ -338,8 +338,8 @@ unsigned char GetSignal(double lat, double lon)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0;)
 	{
-		x=(int)rint(ppd*(lat-dem_get_min_north(indx)));
-		y=mpi-(int)rint(ppd*(LonDiff(dem_get_max_west(indx),lon)));
+		x = dem_diff_lat(indx, lat);
+		y = dem_diff_lon(indx, lon);
 
 		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
 			found=1;
@@ -365,8 +365,8 @@ double GetElevation(site_t * location)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0;)
 	{
-		x=(int)rint(ppd*(site_get_lat_deg(location)-dem_get_min_north(indx)));
-		y=mpi-(int)rint(ppd*(LonDiff(dem_get_max_west(indx),site_get_lon_deg(location))));
+		x = dem_diff_lat(indx, site_get_lat_deg(location));
+		y = dem_diff_lon(indx, site_get_lon_deg(location));
 
 		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
 			found=1;
@@ -394,8 +394,8 @@ int AddElevation(double lat, double lon, double height)
 
 	for (indx=0, found=0; indx<MAXPAGES && found==0;)
 	{
-		x=(int)rint(ppd*(lat-dem_get_min_north(indx)));
-		y=mpi-(int)rint(ppd*(LonDiff(dem_get_max_west(indx),lon)));
+		x = dem_diff_lat(indx, lat);
+		y = dem_diff_lon(indx, lon);
 
 		if (x>=0 && x<=mpi && y>=0 && y<=mpi)
 			found=1;
@@ -3807,8 +3807,8 @@ void WritePPM(char *filename, unsigned char geo, unsigned char kml, unsigned cha
 
 			for (indx=0, found=0; indx<MAXPAGES && found==0;)
 			{
-				x0=(int)rint(ppd*(lat-(double)dem_get_min_north(indx)));
-				y0=mpi-(int)rint(ppd*(LonDiff((double)dem_get_max_west(indx),lon)));
+				x0 = dem_diff_lat(indx, lat);
+				y0 = dem_diff_lon(indx, lon);
 
 				if (x0>=0 && x0<=mpi && y0>=0 && y0<=mpi)
 					found=1;
@@ -4141,8 +4141,8 @@ void WritePPMLR(char *filename, unsigned char geo, unsigned char kml, unsigned c
 
 			for (indx=0, found=0; indx<MAXPAGES && found==0;)
 			{
-				x0=(int)rint(ppd*(lat-(double)dem_get_min_north(indx)));
-				y0=mpi-(int)rint(ppd*(LonDiff((double)dem_get_max_west(indx),lon)));
+				x0 = dem_diff_lat(indx, lat);
+				y0 = dem_diff_lon(indx, lon);
 
 				if (x0>=0 && x0<=mpi && y0>=0 && y0<=mpi)
 					found=1;
@@ -4619,8 +4619,8 @@ void WritePPMSS(char *filename, unsigned char geo, unsigned char kml, unsigned c
 
 			for (indx=0, found=0; indx<MAXPAGES && found==0;)
 			{
-				x0=(int)rint(ppd*(lat-(double)dem_get_min_north(indx)));
-				y0=mpi-(int)rint(ppd*(LonDiff((double)dem_get_max_west(indx),lon)));
+				x0 = dem_diff_lat(indx, lat);
+				y0 = dem_diff_lon(indx, lon);
 
 				if (x0>=0 && x0<=mpi && y0>=0 && y0<=mpi)
 					found=1;
@@ -5133,8 +5133,8 @@ void WritePPMDBM(char *filename, unsigned char geo, unsigned char kml, unsigned 
 
 			for (indx=0, found=0; indx<MAXPAGES && found==0;)
 			{
-				x0=(int)rint(ppd*(lat-(double)dem_get_min_north(indx)));
-				y0=mpi-(int)rint(ppd*(LonDiff((double)dem_get_max_west(indx),lon)));
+				x0 = dem_diff_lat(indx, lat);
+				y0 = dem_diff_lon(indx, lon);
 
 				if (x0>=0 && x0<=mpi && y0>=0 && y0<=mpi)
 					found=1;

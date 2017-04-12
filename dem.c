@@ -1,7 +1,9 @@
 // Standard C includes
+#include <math.h>
 
 // Projects includes
 #include "constants.h"
+#include "global.h"
 
 // Module include
 #include "dem.h"
@@ -160,4 +162,19 @@ void	dem_set_zero(int indx)
 			dem_set_max_el(indx, 0);
 			dem_set_min_el(indx, 0);
 		}
+}
+
+int	dem_diff_lat(int indx, double lat)
+{
+	int ippd = dem_get_ippd(indx);
+	double ppd=(double)ippd;
+	return (int)rint(ppd*(lat-dem_get_min_north(indx)));
+}
+
+int	dem_diff_lon(int indx, double lon)
+{
+	int ippd = dem_get_ippd(indx);
+	double ppd=(double)ippd;
+	int mpi = ippd - 1;
+	return mpi-(int)rint(ppd*(LonDiff(dem_get_max_west(indx),lon)));
 }
