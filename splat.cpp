@@ -1573,6 +1573,29 @@ void LoadPAT(char *filename)
 	}
 }
 
+void update_maxmin(int indx)
+{
+	min_elevation = min(min_elevation, dem_get_min_el(indx));
+
+	max_elevation = max(max_elevation, dem_get_max_el(indx));
+
+	if (max_north==-90)
+		max_north=dem_get_max_north(indx);
+	max_north = max(max_north, dem_get_max_north(indx));
+
+	if (min_north==90)
+		min_north=dem_get_min_north(indx);
+	min_north = min(min_north, dem_get_min_north(indx));
+
+	if (max_west==-1)
+		max_west=dem_get_max_west(indx);
+	max_west=max_lon(max_west, dem_get_max_west(indx));
+
+	if (min_west==360)
+		min_west=dem_get_min_west(indx);
+	min_west=min_lon(min_west, dem_get_min_west(indx));
+}
+
 int LoadSDF_SDF(char *name)
 {
 	/* This function reads uncompressed SPLAT Data Files (.sdf)
@@ -1679,25 +1702,7 @@ int LoadSDF_SDF(char *name)
 
 			fclose(fd);
 
-			min_elevation = min(min_elevation, dem_get_min_el(indx));
-
-			max_elevation = max(max_elevation, dem_get_max_el(indx));
-
-			if (max_north==-90)
-				max_north=dem_get_max_north(indx);
-			max_north = max(max_north, dem_get_max_north(indx));
-
-			if (min_north==90)
-				min_north=dem_get_min_north(indx);
-			min_north = min(min_north, dem_get_min_north(indx));
-
-			if (max_west==-1)
-				max_west=dem_get_max_west(indx);
-			max_west=max_lon(max_west, dem_get_max_west(indx));
-
-			if (min_west==360)
-				min_west=dem_get_min_west(indx);
-			min_west=min_lon(min_west, dem_get_min_west(indx));
+			update_maxmin(indx);
 
 			fprintf(stdout," Done!\n");
 			fflush(stdout);
@@ -1879,25 +1884,7 @@ int LoadSDF_BZ(char *name)
 
 			BZ2_bzReadClose(&bzerror,bzfd);
 
-			min_elevation=min(min_elevation, dem_get_min_el(indx));
-	
-			max_elevation=max(max_elevation, dem_get_max_el(indx));
-
-			if (max_north==-90)
-				max_north=dem_get_max_north(indx);
-			max_north=max(max_north, dem_get_max_north(indx));
-
-			if (min_north==90)
-				min_north=dem_get_min_north(indx);
-			min_north=min(min_north, dem_get_min_north(indx));
-
-			if (max_west==-1)
-				max_west=dem_get_max_west(indx);
-			max_west=max_lon(max_west, dem_get_max_west(indx));
-
-			if (min_west==360)
-				min_west=dem_get_min_west(indx);
-			min_west=min_lon(min_west, dem_get_min_west(indx));
+			update_maxmin(indx);
 
 			fprintf(stdout," Done!\n");
 			fflush(stdout);
@@ -1988,25 +1975,7 @@ char LoadSDF(char *name)
 					dem_setmin_el(indx, 0);
 				}
 
-			min_elevation=min(min_elevation, dem_get_min_el(indx));
-
-			max_elevation=max(max_elevation, dem_get_max_el(indx));
-
-			if (max_north==-90)
-				max_north=dem_get_max_north(indx);
-			max_north=max(max_north, dem_get_max_north(indx));
-
-			if (min_north==90)
-				min_north=dem_get_min_north(indx);
-			min_north=min(min_north, dem_get_min_north(indx));
-
-			if (max_west==-1)
-				max_west=dem_get_max_west(indx);
-			max_west=max_lon(max_west, dem_get_max_west(indx));
-
-			if (min_west==360)
-				min_west=dem_get_min_west(indx);
-			min_west=min_lon(min_west, dem_get_min_west(indx));
+			update_maxmin(indx);
 
 			fprintf(stdout," Done!\n");
 			fflush(stdout);
