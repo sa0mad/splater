@@ -137,3 +137,27 @@ unsigned char	dem_get_mask(int indx, int x, int y)
 {
 	return dem[indx].mask[x][y];
 }
+
+void	dem_set_elevation(int indx, int x, int y, int elevation)
+{
+	dem_set_data(indx, x, y, elevation);
+	dem_set_signal(indx, x, y, 0);
+	dem_set_mask(indx, x, y, 0);
+	dem_setmax_el(indx, elevation);
+	dem_setmin_el(indx, elevation);
+}
+
+void	dem_set_zero(int indx)
+{
+	int ippd, x, y;
+	ippd = dem_get_ippd(indx);
+	for (x=0; x<ippd; x++)
+		for (y=0; y<ippd; y++)
+		{
+			dem_set_data(indx, x, y, 0);
+			dem_set_signal(indx, x, y, 0);
+			dem_set_mask(indx, x, y, 0);
+			dem_set_max_el(indx, 0);
+			dem_set_min_el(indx, 0);
+		}
+}

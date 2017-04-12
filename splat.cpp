@@ -1693,11 +1693,7 @@ int LoadSDF_SDF(char *name)
 					fgets(line,19,fd);
 					data=atoi(line);
 
-					dem_set_data(indx, x, y, data);
-					dem_set_signal(indx, x, y, 0);
-					dem_set_mask(indx, x, y, 0);
-					dem_setmax_el(indx, data);
-					dem_setmin_el(indx, data);
+					dem_set_elevation(indx, x, y, data);
 				}
 
 			fclose(fd);
@@ -1873,11 +1869,7 @@ int LoadSDF_BZ(char *name)
 					string=BZfgets(bzfd,20);
 					data=atoi(string);
 
-					dem_set_data(indx, x, y, data);
-					dem_set_signal(indx, x, y, 0);
-					dem_set_mask(indx, x, y, 0);
-					dem_setmax_el(indx, data);
-					dem_setmin_el(indx, data);
+					dem_set_elevation(indx, x, y, data);
 				}
 
 			fclose(fd);
@@ -1964,17 +1956,7 @@ char LoadSDF(char *name)
 			dem_set_max_north(indx, maxlat);
 			
 			/* Fill DEM with sea-level topography */
-
-			ippd = dem_get_ippd(indx);
-			for (x=0; x<ippd; x++)
-				for (y=0; y<ippd; y++)
-				{
-		    			dem_set_data(indx, x, y, 0);
-					dem_set_signal(indx, x, y, 0);
-					dem_set_mask(indx, x, y, 0);
-					dem_setmin_el(indx, 0);
-				}
-
+			dem_set_zero(indx);
 			update_maxmin(indx);
 
 			fprintf(stdout," Done!\n");

@@ -28,5 +28,7 @@ extern	void	dem_set_signal(int indx, int x, int y, unsigned char signal);
 extern	unsigned char	dem_get_signal(int indx, int x, int y);
 extern	void	dem_set_mask(int indx, int x, int y, unsigned char mask);
 extern	unsigned char	dem_get_mask(int indx, int x, int y);
+extern	void	dem_set_elevation(int indx, int x, int y, int elevation);
+extern	void	dem_set_zero(int indx);
 
 #endif // __SPLAT_DEM_H
