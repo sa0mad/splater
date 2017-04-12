@@ -107,6 +107,22 @@ int min(int a, int b)
 	return b;
 }
 
+int max_lon(int a, int b)
+{
+	if (abs(a-b) < 180)
+		return max(a,b);
+	else
+		return min(a,b);
+}
+
+int min_lon(int a, int b)
+{
+	if (abs(a-b) < 180)
+		return min(a,b);
+	else
+		return max(a,b);
+}
+
 int interpolate(int y0, int y1, int x0, int x1, int n)
 {
 	/* Perform linear interpolation between quantized contour
@@ -1677,19 +1693,11 @@ int LoadSDF_SDF(char *name)
 
 			if (max_west==-1)
 				max_west=dem_get_max_west(indx);
-
-			if (abs(dem_get_max_west(indx)-max_west)<180)
-				max_west=max(max_west, dem_get_max_west(indx));
-			else
-				max_west=min(max_west, dem_get_max_west(indx));
+			max_west=max_lon(max_west, dem_get_max_west(indx));
 
 			if (min_west==360)
 				min_west=dem_get_min_west(indx);
-
-			if (fabs(dem_get_min_west(indx)-min_west)<180.0)
-				min_west=min(min_west, dem_get_min_west(indx));
-			else
-				min_west=max(min_west, dem_get_min_west(indx));
+			min_west=min_lon(min_west, dem_get_min_west(indx));
 
 			fprintf(stdout," Done!\n");
 			fflush(stdout);
@@ -1885,17 +1893,11 @@ int LoadSDF_BZ(char *name)
 
 			if (max_west==-1)
 				max_west=dem_get_max_west(indx);
-			if (abs(dem_get_max_west(indx)-max_west)<180)
-				max_west=max(max_west, dem_get_max_west(indx));
-			else
-				max_west=min(max_west, dem_get_max_west(indx));
+			max_west=max_lon(max_west, dem_get_max_west(indx));
 
 			if (min_west==360)
 				min_west=dem_get_min_west(indx);
-			if (abs(dem_get_min_west(indx)-min_west)<180)
-				min_west=min(min_west, dem_get_min_west(indx));
-			else
-				min_west=max(min_west, dem_get_min_west(indx));
+			min_west=min_lon(min_west, dem_get_min_west(indx));
 
 			fprintf(stdout," Done!\n");
 			fflush(stdout);
@@ -2000,18 +2002,11 @@ char LoadSDF(char *name)
 
 			if (max_west==-1)
 				max_west=dem_get_max_west(indx);
-			if (abs(dem_get_max_west(indx)-max_west)<180)
-				max_west=max(max_west, dem_get_max_west(indx));
-			else
-				max_west=min(max_west, dem_get_max_west(indx));
+			max_west=max_lon(max_west, dem_get_max_west(indx));
 
 			if (min_west==360)
 				min_west=dem_get_min_west(indx);
-
-			if (abs(dem_get_min_west(indx)-min_west)<180)
-				min_west=min(min_west, dem_get_min_west(indx));
-			else
-				min_west=max(min_west, dem_get_min_west(indx));
+			min_west=min_lon(min_west, dem_get_min_west(indx));
 
 			fprintf(stdout," Done!\n");
 			fflush(stdout);
