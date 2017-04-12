@@ -76,6 +76,12 @@ void	dem_set_max_el(int indx, int max_el)
 	dem[indx].max_el = max_el;
 }
 
+void	dem_setmax_el(int indx, int el)
+{
+	if (el > dem[indx].max_el)
+		dem[indx].max_el = el;
+}
+
 int	dem_get_max_el(int indx)
 {
 	return dem[indx].max_el;
@@ -84,6 +90,12 @@ int	dem_get_max_el(int indx)
 void	dem_set_min_el(int indx, int min_el)
 {
 	dem[indx].min_el = min_el;
+}
+
+void	dem_setmin_el(int indx, int el)
+{
+	if (el < dem[indx].max_el)
+		dem[indx].max_el = el;
 }
 
 int	dem_get_min_el(int indx)

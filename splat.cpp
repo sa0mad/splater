@@ -93,6 +93,20 @@ void point_to_point_ITM(double elev[], double tht_m, double rht_m,
 
 double ITWOMVersion();
 
+int max(int a, int b)
+{
+	if (a > b)
+		return a;
+	return b;
+}
+
+int min(int a, int b)
+{
+	if (a < b)
+		return a;
+	return b;
+}
+
 int interpolate(int y0, int y1, int x0, int x1, int n)
 {
 	/* Perform linear interpolation between quantized contour
@@ -1643,69 +1657,39 @@ int LoadSDF_SDF(char *name)
 					dem_set_data(indx, x, y, data);
 					dem_set_signal(indx, x, y, 0);
 					dem_set_mask(indx, x, y, 0);
-
-					if (data>dem_get_max_el(indx))
-						dem_set_max_el(indx, data);
-
-					if (data<dem_get_min_el(indx))
-						dem_set_min_el(indx, data);
+					dem_setmax_el(indx, data);
+					dem_setmin_el(indx, data);
 				}
 
 			fclose(fd);
 
-			if (dem_get_min_el(indx)<min_elevation)
-				min_elevation=dem_get_min_el(indx);
+			min_elevation = min(min_elevation, dem_get_min_el(indx));
 
-			if (dem_get_max_el(indx)>max_elevation)
-				max_elevation=dem_get_max_el(indx);
+			max_elevation = max(max_elevation, dem_get_max_el(indx));
 
 			if (max_north==-90)
 				max_north=dem_get_max_north(indx);
-
-			else if (dem_get_max_north(indx)>max_north)
-					max_north=dem_get_max_north(indx);
+			max_north = max(max_north, dem_get_max_north(indx));
 
 			if (min_north==90)
 				min_north=dem_get_min_north(indx);
-
-			else if (dem_get_min_north(indx)<min_north)
-				min_north=dem_get_min_north(indx);
+			min_north = min(min_north, dem_get_min_north(indx));
 
 			if (max_west==-1)
 				max_west=dem_get_max_west(indx);
 
+			if (abs(dem_get_max_west(indx)-max_west)<180)
+				max_west=max(max_west, dem_get_max_west(indx));
 			else
-			{
-				if (abs(dem_get_max_west(indx)-max_west)<180)
-				{
- 					if (dem_get_max_west(indx) > max_west)
-						max_west=dem_get_max_west(indx);
-				}
-
-				else
-				{
- 					if (dem_get_max_west(indx) < max_west)
-						max_west=dem_get_max_west(indx);
-				}
-			}
+				max_west=min(max_west, dem_get_max_west(indx));
 
 			if (min_west==360)
 				min_west=dem_get_min_west(indx);
 
+			if (fabs(dem_get_min_west(indx)-min_west)<180.0)
+				min_west=min(min_west, dem_get_min_west(indx));
 			else
-			{
-				if (fabs(dem_get_min_west(indx)-min_west)<180.0)
-				{
- 					if (dem_get_min_west(indx) < min_west)
-						min_west=dem_get_min_west(indx);
-				}
-
-				else
-				{
- 					if (dem_get_min_west(indx) > min_west)
-						min_west=dem_get_min_west(indx);
-				}
-			}
+				min_west=max(min_west, dem_get_min_west(indx));
 
 			fprintf(stdout," Done!\n");
 			fflush(stdout);
@@ -1879,71 +1863,39 @@ int LoadSDF_BZ(char *name)
 					dem_set_data(indx, x, y, data);
 					dem_set_signal(indx, x, y, 0);
 					dem_set_mask(indx, x, y, 0);
-
-					if (data>dem_get_max_el(indx))
-						dem_set_max_el(indx, data);
-
-					if (data<dem_get_min_el(indx))
-						dem_set_min_el(indx, data);
+					dem_setmax_el(indx, data);
+					dem_setmin_el(indx, data);
 				}
 
 			fclose(fd);
 
 			BZ2_bzReadClose(&bzerror,bzfd);
 
-			if (dem_get_min_el(indx)<min_elevation)
-				min_elevation=dem_get_min_el(indx);
+			min_elevation=min(min_elevation, dem_get_min_el(indx));
 	
-			if (dem_get_max_el(indx)>max_elevation)
-				max_elevation=dem_get_max_el(indx);
+			max_elevation=max(max_elevation, dem_get_max_el(indx));
 
 			if (max_north==-90)
 				max_north=dem_get_max_north(indx);
-
-			else if (dem_get_max_north(indx)>max_north)
-					max_north=dem_get_max_north(indx);
+			max_north=max(max_north, dem_get_max_north(indx));
 
 			if (min_north==90)
 				min_north=dem_get_min_north(indx);
-
-			else if (dem_get_min_north(indx)<min_north)
-				min_north=dem_get_min_north(indx);
+			min_north=min(min_north, dem_get_min_north(indx));
 
 			if (max_west==-1)
 				max_west=dem_get_max_west(indx);
-
+			if (abs(dem_get_max_west(indx)-max_west)<180)
+				max_west=max(max_west, dem_get_max_west(indx));
 			else
-			{
-				if (abs(dem_get_max_west(indx)-max_west)<180)
-				{
- 					if (dem_get_max_west(indx) > max_west)
-						max_west=dem_get_max_west(indx);
-				}
-
-				else
-				{
- 					if (dem_get_max_west(indx) < max_west)
-						max_west=dem_get_max_west(indx);
-				}
-			}
+				max_west=min(max_west, dem_get_max_west(indx));
 
 			if (min_west==360)
 				min_west=dem_get_min_west(indx);
-
+			if (abs(dem_get_min_west(indx)-min_west)<180)
+				min_west=min(min_west, dem_get_min_west(indx));
 			else
-			{
-				if (abs(dem_get_min_west(indx)-min_west)<180)
-				{
- 					if (dem_get_min_west(indx) < min_west)
-						min_west=dem_get_min_west(indx);
-				}
-
-				else
-				{
- 					if (dem_get_min_west(indx) > min_west)
-						min_west=dem_get_min_west(indx);
-				}
-			}
+				min_west=max(min_west, dem_get_min_west(indx));
 
 			fprintf(stdout," Done!\n");
 			fflush(stdout);
@@ -2031,64 +1983,35 @@ char LoadSDF(char *name)
 		    			dem_set_data(indx, x, y, 0);
 					dem_set_signal(indx, x, y, 0);
 					dem_set_mask(indx, x, y, 0);
-
-					if (dem_get_min_el(indx)>0)
-						dem_set_min_el(indx, 0);
+					dem_setmin_el(indx, 0);
 				}
 
-			if (dem_get_min_el(indx)<min_elevation)
-				min_elevation=dem_get_min_el(indx);
+			min_elevation=min(min_elevation, dem_get_min_el(indx));
 
-			if (dem_get_max_el(indx)>max_elevation)
-				max_elevation=dem_get_max_el(indx);
+			max_elevation=max(max_elevation, dem_get_max_el(indx));
 
 			if (max_north==-90)
 				max_north=dem_get_max_north(indx);
-
-			else if (dem_get_max_north(indx)>max_north)
-					max_north=dem_get_max_north(indx);
+			max_north=max(max_north, dem_get_max_north(indx));
 
 			if (min_north==90)
 				min_north=dem_get_min_north(indx);
-
-			else if (dem_get_min_north(indx)<min_north)
-				min_north=dem_get_min_north(indx);
+			min_north=min(min_north, dem_get_min_north(indx));
 
 			if (max_west==-1)
 				max_west=dem_get_max_west(indx);
-
+			if (abs(dem_get_max_west(indx)-max_west)<180)
+				max_west=max(max_west, dem_get_max_west(indx));
 			else
-			{
-				if (abs(dem_get_max_west(indx)-max_west)<180)
-				{
- 					if (dem_get_max_west(indx) > max_west)
-						max_west=dem_get_max_west(indx);
-				}
-
-				else
-				{
- 					if (dem_get_max_west(indx) < max_west)
-						max_west=dem_get_max_west(indx);
-				}
-			}
+				max_west=min(max_west, dem_get_max_west(indx));
 
 			if (min_west==360)
 				min_west=dem_get_min_west(indx);
 
+			if (abs(dem_get_min_west(indx)-min_west)<180)
+				min_west=min(min_west, dem_get_min_west(indx));
 			else
-			{
-				if (abs(dem_get_min_west(indx)-min_west)<180)
-				{
- 					if (dem_get_min_west(indx) < min_west)
-						min_west=dem_get_min_west(indx);
-				}
-
-				else
-				{
- 					if (dem_get_min_west(indx) > min_west)
-						min_west=dem_get_min_west(indx);
-				}
-			}
+				min_west=max(min_west, dem_get_min_west(indx));
 
 			fprintf(stdout," Done!\n");
 			fflush(stdout);
