@@ -340,3 +340,15 @@ int dem_add_elevation_pos(double lat, double lon, double height)
 
 	return found;
 }
+
+int	dem_exists(int minlat, int maxlat, int minlon, int maxlon)
+{
+	int indx;
+
+	for (indx=0; indx<MAXPAGES; indx++)
+	{
+		if (minlat==dem_get_min_north(indx) && minlon==dem_get_min_west(indx) && maxlat==dem_get_max_north(indx) && maxlon==dem_get_max_west(indx))
+			return 1;
+	}
+	return 0;
+}

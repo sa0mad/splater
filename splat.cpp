@@ -1442,12 +1442,7 @@ int LoadSDF_SDF(char *name)
 	sdf_file[x+4]=0;
 
 	/* Is it already in memory? */
-
-	for (indx=0, found=0; indx<MAXPAGES && found==0; indx++)
-	{
-		if (minlat==dem_get_min_north(indx) && minlon==dem_get_min_west(indx) && maxlat==dem_get_max_north(indx) && maxlon==dem_get_max_west(indx))
-			found=1;
-	}
+	found = dem_exists(minlat, maxlat, minlon, maxlon);
 
 	/* Is room available to load it? */
 
@@ -1623,12 +1618,7 @@ int LoadSDF_BZ(char *name)
 	sdf_file[x+8]=0;
 
 	/* Is it already in memory? */
-
-	for (indx=0, found=0; indx<MAXPAGES && found==0; indx++)
-	{
-		if (minlat==dem_get_min_north(indx) && minlon==dem_get_min_west(indx) && maxlat==dem_get_max_north(indx) && maxlon==dem_get_max_west(indx))
-			found=1;
-	}
+	found = dem_exists(minlat, maxlat, minlon, maxlon);
 
 	/* Is room available to load it? */
 
@@ -1742,12 +1732,7 @@ char LoadSDF(char *name)
 		sscanf(name,"%d:%d:%d:%d",&minlat,&maxlat,&minlon,&maxlon);
 
 		/* Is it already in memory? */
-
-		for (indx=0, found=0; indx<MAXPAGES && found==0; indx++)
-		{
-			if (minlat==dem_get_min_north(indx) && minlon==dem_get_min_west(indx) && maxlat==dem_get_max_north(indx) && maxlon==dem_get_max_west(indx))
-				found=1;
-		}
+		found = dem_exists(minlat, maxlat, minlon, maxlon);
 
 		/* Is room available to load it? */
 
