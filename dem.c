@@ -135,6 +135,11 @@ void	dem_set_mask(int indx, int x, int y, unsigned char mask)
 	dem[indx].mask[x][y] = mask;
 }
 
+void	dem_or_mask(int indx, int x, int y, unsigned char mask)
+{
+	dem[indx].mask[x][y] |= mask;
+}
+
 unsigned char	dem_get_mask(int indx, int x, int y)
 {
 	return dem[indx].mask[x][y];

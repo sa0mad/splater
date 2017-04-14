@@ -262,7 +262,7 @@ int OrMask(double lat, double lon, int value)
 	found = dem_find_indx(lat, lon, &indx, &x, &y);
 	if (found)
 	{
-		dem_set_mask(indx, x, y, value);
+		dem_or_mask(indx, x, y, value);
 		return (int)dem_get_mask(indx, x, y);
 	}
 
