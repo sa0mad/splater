@@ -1,6 +1,9 @@
 #ifndef __SPLAT_DEM_H
 #define __SPLAT_DEM_H
 
+// Projects includes
+#include "site.h"
+
 typedef struct dem dem_t;
 
 extern dem_t dem[MAXPAGES];
@@ -39,5 +42,7 @@ extern	int	dem_or_mask_pos(double lat, double lon, int value);
 extern	int	dem_get_mask_pos(double lat, double lon);
 extern	int	dem_set_signal_pos(double lat, double lon, unsigned char signal);
 extern	unsigned char dem_get_signal_pos(double lat, double lon);
+extern	double dem_get_elevation_loc(site_t * location);
+extern	int dem_add_elevation_pos(double lat, double lon, double height);
 
 #endif // __SPLAT_DEM_H

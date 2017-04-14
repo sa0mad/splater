@@ -300,3 +300,42 @@ unsigned char dem_get_signal_pos(double lat, double lon)
 	else
 		return 0;
 }
+
+double dem_get_elevation_loc(site_t * location)
+{
+	/* This function returns the elevation (in feet) of any location
+	   represented by the digital elevation model data in memory.
+	   Function returns -5000.0 for locations not found in memory. */
+
+	char	found;
+	int	x, y, indx;
+	double	elevation;
+	double	lat, lon;
+
+	lat = site_get_lat_deg(location);
+	lon = site_get_lon_deg(location);
+	found = dem_find_indx(lat, lon, &indx, &x, &y);
+	if (found)
+		elevation=3.28084*dem_get_data(indx, x, y);
+	else
+		elevation=-5000.0;
+	
+	return elevation;
+}
+
+int dem_add_elevation_pos(double lat, double lon, double height)
+{
+	/* This function adds a user-defined terrain feature
+	   (in meters AGL) to the digital elevation model data
+	   in memory.  Does nothing and returns 0 for locations
+	   not found in memory. */
+
+	char	found;
+	int	x, y, indx;
+
+	found = dem_find_indx(lat, lon, &indx, &x, &y);
+	if (found)
+		dem_inc_data(indx, x, y, (short)rint(height));
+
+	return found;
+}
