@@ -34,5 +34,8 @@ extern	void	dem_set_zero(int indx);
 extern	int	dem_diff_lat(int indx, double lat);
 extern	int	dem_diff_lon(int indx, double lon);
 extern	int	dem_find_indx(double lat, double lon, int * index, int *xp, int *yp);
+extern	int	dem_set_mask_pos(double lat, double lon, int value);
+extern	int	dem_or_mask_pos(double lat, double lon, int value);
+extern	int	dem_get_mask_pos(double lat, double lon);
 
 #endif // __SPLAT_DEM_H
