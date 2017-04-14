@@ -352,3 +352,11 @@ int	dem_exists(int minlat, int maxlat, int minlon, int maxlon)
 	}
 	return 0;
 }
+
+int	dem_freespace(int * indxp)
+{
+	for (*indxp=0; *indxp<MAXPAGES; *indxp++)
+		if (dem_get_max_north(*indxp)==-90)
+			return 1;
+	return 0;
+}

@@ -45,5 +45,6 @@ extern	unsigned char dem_get_signal_pos(double lat, double lon);
 extern	double dem_get_elevation_loc(site_t * location);
 extern	int dem_add_elevation_pos(double lat, double lon, double height);
 extern	int	dem_exists(int minlat, int maxlat, int minlon, int maxlon);
+extern	int	dem_freespace(int * indxp);
 
 #endif // __SPLAT_DEM_H

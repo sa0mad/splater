@@ -1447,11 +1447,7 @@ int LoadSDF_SDF(char *name)
 	/* Is room available to load it? */
 
 	if (found==0)
-	{	
-		for (indx=0, free_page=0; indx<MAXPAGES && free_page==0; indx++)
-			if (dem_get_max_north(indx)==-90)
-				free_page=1;
-	}
+		free_page = dem_freespace(&indx);
 
 	indx--;
 
@@ -1623,11 +1619,7 @@ int LoadSDF_BZ(char *name)
 	/* Is room available to load it? */
 
 	if (found==0)
-	{	
-		for (indx=0, free_page=0; indx<MAXPAGES && free_page==0; indx++)
-			if (dem_get_max_north(indx)==-90)
-				free_page=1;
-	}
+		free_page = dem_freespace(&indx);
 
 	indx--;
 
@@ -1737,11 +1729,7 @@ char LoadSDF(char *name)
 		/* Is room available to load it? */
 
 		if (found==0)
-		{	
-			for (indx=0, free_page=0; indx<MAXPAGES && free_page==0; indx++)
-				if (dem_get_max_north(indx)==-90)
-					free_page=1;
-		}
+			free_page = dem_freespace(&indx);
 
 		indx--;
 
