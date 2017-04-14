@@ -4,6 +4,7 @@
 // Projects includes
 #include "constants.h"
 #include "global.h"
+#include "site.h"
 
 // Module include
 #include "dem.h"
