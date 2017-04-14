@@ -275,7 +275,15 @@ int GetMask(double lat, double lon)
 	/* This function returns the mask bits based on the latitude
 	   and longitude given. */
 
-	return (OrMask(lat,lon,0));
+
+	int	x, y, indx;
+	char	found;
+
+	found = dem_find_indx(lat, lon, &indx, &x, &y);
+	if (found)
+		return (int)dem_get_mask(indx, x, y);
+	else
+		return -1;
 }
 
 int PutSignal(double lat, double lon, unsigned char signal)
