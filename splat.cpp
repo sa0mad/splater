@@ -226,41 +226,6 @@ char *dec2dms(double decimal)
 	return (string);
 }
 
-int PutSignal(double lat, double lon, unsigned char signal)
-{
-	/* This function writes a signal level (0-255)
-	   at the specified location for later recall. */
-
-	int	x, y, indx;
-	char	found;
-
-	found = dem_find_indx(lat, lon, &indx, &x, &y);
-	if (found)
-	{
-		dem_set_signal(indx, x, y, signal);
-		return dem_get_signal(indx, x, y);
-	}
-
-	else
-		return 0;
-}
-
-unsigned char GetSignal(double lat, double lon)
-{
-	/* This function reads the signal level (0-255) at the
-	   specified location that was previously written by the
-	   complimentary PutSignal() function. */
-
-	int	x, y, indx;
-	char	found;
-
-	found = dem_find_indx(lat, lon, &indx, &x, &y);
-	if (found)
-		return dem_get_signal(indx, x, y);
-	else
-		return 0;
-}
-
 double GetElevation(site_t * location)
 {
 	/* This function returns the elevation (in feet) of any location
@@ -2644,12 +2609,12 @@ void PlotLRPath(site_t * source, site_t * destination, unsigned char mask_value,
 					if (ifs>255)
 						ifs=255;
 
-					ofs=GetSignal(path.lat[y],path.lon[y]);
+					ofs=dem_get_signal_pos(path.lat[y],path.lon[y]);
 
 					if (ofs>ifs)
 						ifs=ofs;
 
-					PutSignal(path.lat[y],path.lon[y],(unsigned char)ifs);
+					dem_set_signal_pos(path.lat[y],path.lon[y],(unsigned char)ifs);
 				}
 
 				else
@@ -2664,12 +2629,12 @@ void PlotLRPath(site_t * source, site_t * destination, unsigned char mask_value,
 					if (ifs>255)
 						ifs=255;
 
-					ofs=GetSignal(path.lat[y],path.lon[y]);
+					ofs=dem_get_signal_pos(path.lat[y],path.lon[y]);
 
 					if (ofs>ifs)
 						ifs=ofs;
 
-					PutSignal(path.lat[y],path.lon[y],(unsigned char)ifs);
+					dem_set_signal_pos(path.lat[y],path.lon[y],(unsigned char)ifs);
 	
 					if (fd!=NULL)
 						fprintf(fd,"%.3f",field_strength);
@@ -2683,12 +2648,12 @@ void PlotLRPath(site_t * source, site_t * destination, unsigned char mask_value,
 				else
 					ifs=(int)rint(loss);
 
-				ofs=GetSignal(path.lat[y],path.lon[y]);
+				ofs=dem_get_signal_pos(path.lat[y],path.lon[y]);
 
 				if (ofs<ifs && ofs!=0)
 					ifs=ofs;
 
-				PutSignal(path.lat[y],path.lon[y],(unsigned char)ifs);
+				dem_set_signal_pos(path.lat[y],path.lon[y],(unsigned char)ifs);
 			}
 
 			if (fd!=NULL)
@@ -7146,7 +7111,7 @@ int LoadANO(char *filename)
 					if (ano>255.0)
 						ano=255.0;
 
-					PutSignal(latitude,longitude,((unsigned char)round(ano)));
+					dem_set_signal_pos(latitude,longitude,((unsigned char)round(ano)));
 				}
 			}
 
@@ -7164,7 +7129,7 @@ int LoadANO(char *filename)
 					if (ano>255.0)
 						ano=255.0;
 
-					PutSignal(latitude,longitude,((unsigned char)round(ano)));
+					dem_set_signal_pos(latitude,longitude,((unsigned char)round(ano)));
 				}
 			}
 
@@ -7182,7 +7147,7 @@ int LoadANO(char *filename)
 					if (ano>255.0)
 						ano=255.0;
 
-					PutSignal(latitude,longitude,((unsigned char)round(ano)));
+					dem_set_signal_pos(latitude,longitude,((unsigned char)round(ano)));
 				}
 			}
 

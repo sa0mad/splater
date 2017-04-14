@@ -206,7 +206,7 @@ int	dem_find_indx(double lat, double lon, int * index, int *xp, int *yp)
 	return found;
 }
 
-int dem_set_mask_pos(double lat, double lon, int value)
+int	dem_set_mask_pos(double lat, double lon, int value)
 {
 	/* Lines, text, markings, and coverage areas are stored in a
 	   mask that is combined with topology data when topographic
@@ -228,7 +228,7 @@ int dem_set_mask_pos(double lat, double lon, int value)
 		return -1;
 }
 
-int dem_or_mask_pos(double lat, double lon, int value)
+int	dem_or_mask_pos(double lat, double lon, int value)
 {
 	/* Lines, text, markings, and coverage areas are stored in a
 	   mask that is combined with topology data when topographic
@@ -250,7 +250,7 @@ int dem_or_mask_pos(double lat, double lon, int value)
 		return -1;
 }
 
-int dem_get_mask_pos(double lat, double lon)
+int	dem_get_mask_pos(double lat, double lon)
 {
 	/* This function returns the mask bits based on the latitude
 	   and longitude given. */
@@ -266,3 +266,37 @@ int dem_get_mask_pos(double lat, double lon)
 		return -1;
 }
 
+int	dem_set_signal_pos(double lat, double lon, unsigned char signal)
+{
+	/* This function writes a signal level (0-255)
+	   at the specified location for later recall. */
+
+	int	x, y, indx;
+	char	found;
+
+	found = dem_find_indx(lat, lon, &indx, &x, &y);
+	if (found)
+	{
+		dem_set_signal(indx, x, y, signal);
+		return dem_get_signal(indx, x, y);
+	}
+
+	else
+		return 0;
+}
+
+unsigned char dem_get_signal_pos(double lat, double lon)
+{
+	/* This function reads the signal level (0-255) at the
+	   specified location that was previously written by the
+	   complimentary dem_set_signal_pos() function. */
+
+	int	x, y, indx;
+	char	found;
+
+	found = dem_find_indx(lat, lon, &indx, &x, &y);
+	if (found)
+		return dem_get_signal(indx, x, y);
+	else
+		return 0;
+}
