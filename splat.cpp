@@ -1003,7 +1003,7 @@ site_t * LoadQTH(char *filename)
 		{
 			string[x]=0;
 			sscanf(string,"%f",&alt);
-			alt *= 3.28084;
+			alt *= FOOT_PER_METERS;
 		}
 
 		else

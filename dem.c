@@ -317,7 +317,7 @@ double dem_get_elevation_loc(site_t * location)
 	lon = site_get_lon_deg(location);
 	found = dem_find_indx(lat, lon, &indx, &x, &y);
 	if (found)
-		elevation=3.28084*dem_get_data(indx, x, y);
+		elevation=FOOT_PER_METERS*dem_get_data(indx, x, y);
 	else
 		elevation=-5000.0;
 	
