@@ -306,8 +306,8 @@ double ElevationAngle(site_t * source, site_t * destination)
 	   
 	register double a, b, dx;
 
-	a=dem_get_elevation_loc(destination)+site_get_alt(destination)+earthradius;
-	b=dem_get_elevation_loc(source)+site_get_alt(source)+earthradius;
+	a=FOOT_PER_METERS*dem_get_elevation_loc(destination)+site_get_alt(destination)+earthradius;
+	b=FOOT_PER_METERS*dem_get_elevation_loc(source)+site_get_alt(source)+earthradius;
 
  	dx=5280.0*Distance(source,destination);
 
@@ -372,7 +372,7 @@ void ReadPath(site_t * source, site_t * destination)
 
 		path.lat[c]=lat1;
 		path.lon[c]=lon1;
-		path.elevation[c]=dem_get_elevation_loc(source);
+		path.elevation[c]=FOOT_PER_METERS*dem_get_elevation_loc(source);
 		path.distance[c]=0.0;
 	}
 
@@ -412,7 +412,7 @@ void ReadPath(site_t * source, site_t * destination)
 		path.lat[c]=lat2;
 		path.lon[c]=lon2;
 		site_set_pos(tempsite, lat2, lon2, 0.0);
-		path.elevation[c]=dem_get_elevation_loc(tempsite);
+		path.elevation[c]=FOOT_PER_METERS*dem_get_elevation_loc(tempsite);
 		path.distance[c]=distance;
 	}
 
@@ -422,7 +422,7 @@ void ReadPath(site_t * source, site_t * destination)
 	{
 		path.lat[c]=site_get_lat_deg(destination);
 		path.lon[c]=site_get_lon_deg(destination);
-		path.elevation[c]=dem_get_elevation_loc(destination);
+		path.elevation[c]=FOOT_PER_METERS*dem_get_elevation_loc(destination);
 		path.distance[c]=total_distance;
 		c++;
 	}
@@ -455,8 +455,8 @@ double ElevationAngle2(site_t * source, site_t * destination, double er)
 	ReadPath(source,destination);
 
 	distance=5280.0*Distance(source,destination);
-	source_alt=er+site_get_alt(source)+dem_get_elevation_loc(source);
-	destination_alt=er+site_get_alt(destination)+dem_get_elevation_loc(destination);
+	source_alt=er+site_get_alt(source)+FOOT_PER_METERS*dem_get_elevation_loc(source);
+	destination_alt=er+site_get_alt(destination)+FOOT_PER_METERS*dem_get_elevation_loc(destination);
 	source_alt2=source_alt*source_alt;
 
 	/* Calculate the cosine of the elevation angle of the
@@ -637,7 +637,7 @@ double haat(site_t * antenna)
 	else
 	{
 		avg_terrain=(sum/(double)c);
-		haat=(site_get_alt(antenna)+dem_get_elevation_loc(antenna))-avg_terrain;
+		haat=(site_get_alt(antenna)+FOOT_PER_METERS*dem_get_elevation_loc(antenna))-avg_terrain;
 		return haat;
 	}
 }
@@ -5667,7 +5667,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 	azimuth=Azimuth(destination,source);
 	distance=Distance(destination,source);
 	refangle=ElevationAngle(destination,source);
-	b=dem_get_elevation_loc(destination)+site_get_alt(destination)+earthradius;
+	b=FOOT_PER_METERS*dem_get_elevation_loc(destination)+site_get_alt(destination)+earthradius;
 
 	/* Wavelength and path distance (great circle) in feet. */
 
@@ -5679,8 +5679,8 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 
 	if (normalized)
 	{
-		ed=dem_get_elevation_loc(destination);
-		es=dem_get_elevation_loc(source);
+		ed=FOOT_PER_METERS*dem_get_elevation_loc(destination);
+		es=FOOT_PER_METERS*dem_get_elevation_loc(source);
 		nb=-site_get_alt(destination)-ed;
 		nm=(-site_get_alt(source)-es-nb)/(path.distance[path.length-1]);
 	}
@@ -5703,7 +5703,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 	{
 		site_set_pos(remote, path.lat[x], path.lon[x], 0.0);
 
-		terrain=dem_get_elevation_loc(remote);
+		terrain=FOOT_PER_METERS*dem_get_elevation_loc(remote);
 
 		if (x==0)
 			terrain += site_get_alt(destination);  /* RX antenna spike */
@@ -6037,11 +6037,11 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 	site_x = site_alloc();
 
 	ReadPath(xmtr,rcvr);
-	h_r=dem_get_elevation_loc(rcvr)+site_get_alt(rcvr)+earthradius;
+	h_r=FOOT_PER_METERS*dem_get_elevation_loc(rcvr)+site_get_alt(rcvr)+earthradius;
 	h_r_f1=h_r;
 	h_r_fpt6=h_r;
 	h_r_orig=h_r;
-	h_t=dem_get_elevation_loc(xmtr)+site_get_alt(xmtr)+earthradius;
+	h_t=FOOT_PER_METERS*dem_get_elevation_loc(xmtr)+site_get_alt(xmtr)+earthradius;
 	d_tx=5280.0*Distance(rcvr,xmtr);
 	cos_tx_angle=((h_r*h_r)+(d_tx*d_tx)-(h_t*h_t))/(2.0*h_r*d_tx);
 	cos_tx_angle_f1=cos_tx_angle;
@@ -6080,7 +6080,7 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 	{
 		site_set_pos(site_x, path.lat[x], path.lon[x], 0.0);
 
-		h_x=dem_get_elevation_loc(site_x)+earthradius+clutter;
+		h_x=FOOT_PER_METERS*dem_get_elevation_loc(site_x)+earthradius+clutter;
 		d_x=5280.0*Distance(rcvr,site_x);
 
 		/* Deal with the LOS path first. */
@@ -6152,9 +6152,9 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 	if (h_r>h_r_orig)
 	{
 		if (metric)
-			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear all obstructions detected by %s.\n",site_get_name(rcvr), METERS_PER_FOOT*(h_r-dem_get_elevation_loc(rcvr)-earthradius),splat_name);
+			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear all obstructions detected by %s.\n",site_get_name(rcvr), METERS_PER_FOOT*h_r-dem_get_elevation_loc(rcvr)-METERS_PER_FOOT*earthradius,splat_name);
 		else
-			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear all obstructions detected by %s.\n",site_get_name(rcvr), h_r-dem_get_elevation_loc(rcvr)-earthradius,splat_name);
+			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear all obstructions detected by %s.\n",site_get_name(rcvr), h_r-FOOT_PER_METERS*dem_get_elevation_loc(rcvr)-earthradius,splat_name);
 	}
 
 	else
@@ -6165,10 +6165,10 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 		if (h_r_fpt6>h_r_orig)
 		{
 			if (metric)
-				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear %.0f%c of the first Fresnel zone.\n",site_get_name(rcvr), METERS_PER_FOOT*(h_r_fpt6-dem_get_elevation_loc(rcvr)-earthradius),fzone_clearance*100.0,37);
+				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear %.0f%c of the first Fresnel zone.\n",site_get_name(rcvr), METERS_PER_FOOT*h_r_fpt6-dem_get_elevation_loc(rcvr)-METERS_PER_FOOT*earthradius,fzone_clearance*100.0,37);
 
 			else
-				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear %.0f%c of the first Fresnel zone.\n",site_get_name(rcvr), h_r_fpt6-dem_get_elevation_loc(rcvr)-earthradius,fzone_clearance*100.0,37);
+				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear %.0f%c of the first Fresnel zone.\n",site_get_name(rcvr), h_r_fpt6-FOOT_PER_METERS*dem_get_elevation_loc(rcvr)-earthradius,fzone_clearance*100.0,37);
 		}
 
 		else
@@ -6177,10 +6177,10 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 		if (h_r_f1>h_r_orig)
 		{
 			if (metric)
-				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear the first Fresnel zone.\n",site_get_name(rcvr), METERS_PER_FOOT*(h_r_f1-dem_get_elevation_loc(rcvr)-earthradius));
+				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear the first Fresnel zone.\n",site_get_name(rcvr), METERS_PER_FOOT*h_r_f1-dem_get_elevation_loc(rcvr)-METERS_PER_FOOT*earthradius);
 
 			else			
-				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear the first Fresnel zone.\n",site_get_name(rcvr), h_r_f1-dem_get_elevation_loc(rcvr)-earthradius);
+				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear the first Fresnel zone.\n",site_get_name(rcvr), h_r_f1-FOOT_PER_METERS*dem_get_elevation_loc(rcvr)-earthradius);
 
 		}
 
@@ -6253,14 +6253,14 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 
 	if (metric)
 	{
-		fprintf(fd2,"Ground elevation: %.2f meters AMSL\n",METERS_PER_FOOT*dem_get_elevation_loc(source));
-		fprintf(fd2,"Antenna height: %.2f meters AGL / %.2f meters AMSL\n",METERS_PER_FOOT*site_get_alt(source),METERS_PER_FOOT*(site_get_alt(source)+dem_get_elevation_loc(source)));
+		fprintf(fd2,"Ground elevation: %.2f meters AMSL\n",dem_get_elevation_loc(source));
+		fprintf(fd2,"Antenna height: %.2f meters AGL / %.2f meters AMSL\n",METERS_PER_FOOT*site_get_alt(source),METERS_PER_FOOT*site_get_alt(source)+dem_get_elevation_loc(source));
 	}
 
 	else
 	{
-		fprintf(fd2,"Ground elevation: %.2f feet AMSL\n",dem_get_elevation_loc(source));
-		fprintf(fd2,"Antenna height: %.2f feet AGL / %.2f feet AMSL\n",site_get_alt(source), site_get_alt(source)+dem_get_elevation_loc(source));
+		fprintf(fd2,"Ground elevation: %.2f feet AMSL\n",FOOT_PER_METERS*dem_get_elevation_loc(source));
+		fprintf(fd2,"Antenna height: %.2f feet AGL / %.2f feet AMSL\n",site_get_alt(source), site_get_alt(source)+FOOT_PER_METERS*dem_get_elevation_loc(source));
 	}
 
 	haavt=haat(source);
@@ -6333,14 +6333,14 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 
 	if (metric)
 	{
-		fprintf(fd2,"Ground elevation: %.2f meters AMSL\n",METERS_PER_FOOT*dem_get_elevation_loc(destination));
-		fprintf(fd2,"Antenna height: %.2f meters AGL / %.2f meters AMSL\n",METERS_PER_FOOT*site_get_alt(destination), METERS_PER_FOOT*(site_get_alt(destination)+dem_get_elevation_loc(destination)));
+		fprintf(fd2,"Ground elevation: %.2f meters AMSL\n",dem_get_elevation_loc(destination));
+		fprintf(fd2,"Antenna height: %.2f meters AGL / %.2f meters AMSL\n",METERS_PER_FOOT*site_get_alt(destination), METERS_PER_FOOT*site_get_alt(destination)+dem_get_elevation_loc(destination));
 	}
 
 	else
 	{
-		fprintf(fd2,"Ground elevation: %.2f feet AMSL\n",dem_get_elevation_loc(destination));
-		fprintf(fd2,"Antenna height: %.2f feet AGL / %.2f feet AMSL\n",site_get_alt(destination), site_get_alt(destination)+dem_get_elevation_loc(destination));
+		fprintf(fd2,"Ground elevation: %.2f feet AMSL\n",FOOT_PER_METERS*dem_get_elevation_loc(destination));
+		fprintf(fd2,"Antenna height: %.2f feet AGL / %.2f feet AMSL\n",site_get_alt(destination), site_get_alt(destination)+FOOT_PER_METERS*dem_get_elevation_loc(destination));
 	}
 
 	haavt=haat(destination);
@@ -6873,14 +6873,14 @@ void SiteReport(site_t * xmtr)
 
 	if (metric)
 	{
-		fprintf(fd,"Ground elevation: %.2f meters AMSL\n",METERS_PER_FOOT*dem_get_elevation_loc(xmtr));
-		fprintf(fd,"Antenna height: %.2f meters AGL / %.2f meters AMSL\n",METERS_PER_FOOT*site_get_alt(xmtr), METERS_PER_FOOT*(site_get_alt(xmtr)+dem_get_elevation_loc(xmtr)));
+		fprintf(fd,"Ground elevation: %.2f meters AMSL\n",dem_get_elevation_loc(xmtr));
+		fprintf(fd,"Antenna height: %.2f meters AGL / %.2f meters AMSL\n",METERS_PER_FOOT*site_get_alt(xmtr), METERS_PER_FOOT*site_get_alt(xmtr)+dem_get_elevation_loc(xmtr));
 	}
 
 	else
 	{
-		fprintf(fd,"Ground elevation: %.2f feet AMSL\n",dem_get_elevation_loc(xmtr));
-		fprintf(fd,"Antenna height: %.2f feet AGL / %.2f feet AMSL\n",site_get_alt(xmtr), site_get_alt(xmtr)+dem_get_elevation_loc(xmtr));
+		fprintf(fd,"Ground elevation: %.2f feet AMSL\n",FOOT_PER_METERS*dem_get_elevation_loc(xmtr));
+		fprintf(fd,"Antenna height: %.2f feet AGL / %.2f feet AMSL\n",site_get_alt(xmtr), site_get_alt(xmtr)+FOOT_PER_METERS*dem_get_elevation_loc(xmtr));
 	}
 
 	terrain=haat(xmtr);
@@ -8004,7 +8004,7 @@ int main(int argc, char *argv[])
 			/* "Ball park" estimates used to load any additional
 			   SDF files required to conduct this analysis. */
 
-			tx_range=sqrt(1.5*(site_get_alt(tx_site[z])+dem_get_elevation_loc(tx_site[z])));
+			tx_range=sqrt(1.5*(site_get_alt(tx_site[z])+FOOT_PER_METERS*dem_get_elevation_loc(tx_site[z])));
 
 			if (LRmap)
 				rx_range=sqrt(1.5*altitudeLR);
