@@ -304,7 +304,7 @@ unsigned char dem_get_signal_pos(double lat, double lon)
 
 double dem_get_elevation_loc(site_t * location)
 {
-	/* This function returns the elevation (in feet) of any location
+	/* This function returns the elevation (in meters) of any location
 	   represented by the digital elevation model data in memory.
 	   Function returns -5000.0 for locations not found in memory. */
 
