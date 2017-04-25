@@ -2374,7 +2374,7 @@ void PlotLRPath(site_t * source, site_t * destination, unsigned char mask_value,
 	
 	ReadPath(source,destination);
 
-	four_thirds_earth=FOUR_THIRDS*EARTHRADIUS;
+	four_thirds_earth=FOUR_THIRDS*EARTHRADIUS_FOOT;
 
 	/* Copy elevations plus clutter along path into the elev[] array. */
 
@@ -6221,7 +6221,7 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 
 	sprintf(report_name,"%s-to-%s.txt",site_get_name(source),site_get_name(destination));
 
-	four_thirds_earth=FOUR_THIRDS*EARTHRADIUS;
+	four_thirds_earth=FOUR_THIRDS*EARTHRADIUS_FOOT;
 
 	for (x=0; report_name[x]!=0; x++)
 		if (report_name[x]==32 || report_name[x]==17 || report_name[x]==92 || report_name[x]==42 || report_name[x]==47)
@@ -7439,7 +7439,7 @@ int main(int argc, char *argv[])
 	ano_filename[0]=0;
 	ani_filename[0]=0;
 	smooth_contours=0;
-	earthradius=EARTHRADIUS;
+	earthradius=EARTHRADIUS_FOOT;
 
 	ippd=IPPD;		/* pixels per degree (integer) */
 	ppd=(double)ippd;	/* pixels per degree (double)  */
