@@ -2637,7 +2637,7 @@ void PlotLOSMap(site_t * source, double altitude)
  	fprintf(stdout,"\nComputing line-of-sight coverage of \"%s\" with an RX antenna\nat %.2f %s AGL",site_get_name(source),metric?altitude:altitude*FOOT_PER_METERS,metric?"meters":"feet");
 
 	if (clutter>0.0)
-		fprintf(stdout," and %.2f %s of ground clutter",metric?clutter*FOOT_PER_METERS*METERS_PER_FOOT:clutter*FOOT_PER_METERS,metric?"meters":"feet");
+		fprintf(stdout," and %.2f %s of ground clutter",metric?clutter:clutter*FOOT_PER_METERS,metric?"meters":"feet");
 
 	fprintf(stdout,"...\n\n 0%c to  25%c ",37,37);
 	fflush(stdout);
@@ -2823,7 +2823,7 @@ void PlotLRMap(site_t * source, double altitude, char *plo_filename)
 	fprintf(stdout," contours of \"%s\"\nout to a radius of %.2f %s with an RX antenna at %.2f %s AGL",site_get_name(source),metric?max_range*KM_PER_MILE:max_range,metric?"kilometers":"miles",metric?altitude:altitude*FOOT_PER_METERS,metric?"meters":"feet");
 
 	if (clutter>0.0)
-		fprintf(stdout,"\nand %.2f %s of ground clutter",metric?clutter*FOOT_PER_METERS*METERS_PER_FOOT:clutter*FOOT_PER_METERS,metric?"meters":"feet");
+		fprintf(stdout,"\nand %.2f %s of ground clutter",metric?clutter:clutter*FOOT_PER_METERS,metric?"meters":"feet");
 
 	fprintf(stdout,"...\n\n 0%c to  25%c ",37,37);
 	fflush(stdout);
@@ -5404,7 +5404,7 @@ void GraphTerrain(site_t * source, site_t * destination, char *name)
 	if (clutter>0.0)
 	{
 		if (metric)
-			fprintf(fd,"plot \"profile.gp\" title \"Terrain Profile\" with lines, \"clutter.gp\" title \"Clutter Profile (%.2f meters)\" with lines\n",clutter*FOOT_PER_METERS*METERS_PER_FOOT);
+			fprintf(fd,"plot \"profile.gp\" title \"Terrain Profile\" with lines, \"clutter.gp\" title \"Clutter Profile (%.2f meters)\" with lines\n",clutter);
 		else
 			fprintf(fd,"plot \"profile.gp\" title \"Terrain Profile\" with lines, \"clutter.gp\" title \"Clutter Profile (%.2f feet)\" with lines\n",clutter*FOOT_PER_METERS);
 	}
@@ -5473,7 +5473,7 @@ void GraphElevation(site_t * source, site_t * destination, char *name)
 			double alt;
 
 			if (path.elevation[x]!=0.0)
-				alt = clutter*FOOT_PER_METERS*METERS_PER_FOOT;
+				alt = clutter;
 			else
 				alt = 0.0;
 			
@@ -5604,7 +5604,7 @@ void GraphElevation(site_t * source, site_t * destination, char *name)
 	if (clutter>0.0)
 	{
 		if (metric)
-			fprintf(fd,"plot \"profile.gp\" title \"Real Earth Profile\" with lines, \"clutter.gp\" title \"Clutter Profile (%.2f meters)\" with lines, \"reference.gp\" title \"Line of Sight Path (%.2f%c elevation)\" with lines\n",clutter*FOOT_PER_METERS*METERS_PER_FOOT,refangle,176);
+			fprintf(fd,"plot \"profile.gp\" title \"Real Earth Profile\" with lines, \"clutter.gp\" title \"Clutter Profile (%.2f meters)\" with lines, \"reference.gp\" title \"Line of Sight Path (%.2f%c elevation)\" with lines\n",clutter,refangle,176);
 		else
 			fprintf(fd,"plot \"profile.gp\" title \"Real Earth Profile\" with lines, \"clutter.gp\" title \"Clutter Profile (%.2f feet)\" with lines, \"reference.gp\" title \"Line of Sight Path (%.2f%c elevation)\" with lines\n",clutter*FOOT_PER_METERS,refangle,176);
 	}
@@ -5965,7 +5965,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 		if (clutter>0.0)
 		{
 			if (metric)
-				fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"clutter.gp\" title \"Ground Clutter (%.2f meters)\" with lines, \"reference.gp\" title \"Line of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines, \"fresnel.gp\" axes x1y1 title \"First Fresnel Zone (%.3f MHz)\" with lines, \"fresnel_pt_6.gp\" title \"%.0f%% of First Fresnel Zone\" with lines\n",clutter*FOOT_PER_METERS*METERS_PER_FOOT,LR.frq_mhz,fzone_clearance*100.0);
+				fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"clutter.gp\" title \"Ground Clutter (%.2f meters)\" with lines, \"reference.gp\" title \"Line of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines, \"fresnel.gp\" axes x1y1 title \"First Fresnel Zone (%.3f MHz)\" with lines, \"fresnel_pt_6.gp\" title \"%.0f%% of First Fresnel Zone\" with lines\n",clutter,LR.frq_mhz,fzone_clearance*100.0);
 			else
 				fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"clutter.gp\" title \"Ground Clutter (%.2f feet)\" with lines, \"reference.gp\" title \"Line of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines, \"fresnel.gp\" axes x1y1 title \"First Fresnel Zone (%.3f MHz)\" with lines, \"fresnel_pt_6.gp\" title \"%.0f%% of First Fresnel Zone\" with lines\n",clutter*FOOT_PER_METERS,LR.frq_mhz,fzone_clearance*100.0);
 		}
@@ -5979,7 +5979,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 		if (clutter>0.0)
 		{
 			if (metric)
-				fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"clutter.gp\" title \"Ground Clutter (%.2f meters)\" with lines, \"reference.gp\" title \"Line Of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines\n",clutter*FOOT_PER_METERS*METERS_PER_FOOT);
+				fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"clutter.gp\" title \"Ground Clutter (%.2f meters)\" with lines, \"reference.gp\" title \"Line Of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines\n",clutter);
 			else
 				fprintf(fd,"plot \"profile.gp\" title \"Point-to-Point Profile\" with lines, \"clutter.gp\" title \"Ground Clutter (%.2f feet)\" with lines, \"reference.gp\" title \"Line Of Sight Path\" with lines, \"curvature.gp\" axes x1y2 title \"Earth's Curvature Contour\" with lines\n",clutter*FOOT_PER_METERS);
 		}
@@ -6055,7 +6055,7 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 		fprintf(outfile,"Terrain has been raised by");
 
 		if (metric)
-			fprintf(outfile," %.2f meters",METERS_PER_FOOT*clutter*FOOT_PER_METERS);
+			fprintf(outfile," %.2f meters",clutter);
 		else
 			fprintf(outfile," %.2f feet",clutter*FOOT_PER_METERS);
 
@@ -6080,8 +6080,8 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 	{
 		site_set_pos(site_x, path.lat[x], path.lon[x], 0.0);
 
-		h_x=FOOT_PER_METERS*dem_get_elevation_loc(site_x)+earthradius*FOOT_PER_METERS+clutter*FOOT_PER_METERS;
-		d_x=FOOT_PER_METERS*Distance(rcvr,site_x);
+		h_x=dem_get_elevation_loc(site_x)+earthradius+clutter;
+		d_x=Distance(rcvr,site_x);
 
 		/* Deal with the LOS path first. */
 
