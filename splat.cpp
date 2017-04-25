@@ -238,7 +238,7 @@ double Distance(site_t * site1, site_t * site2)
 	lat2=site_get_lat_rad(site2);
 	lon2=site_get_lon_rad(site2);
 
-	distance=EARTHRADIUS_MILE*acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos((lon1)-(lon2)));
+	distance=EARTHRADIUS_METER*MILE_PER_METER*acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos((lon1)-(lon2)));
 
 	return distance;
 }
@@ -378,7 +378,7 @@ void ReadPath(site_t * source, site_t * destination)
 
 	for (distance=0.0, c=0; (total_distance!=0.0 && distance<=total_distance && c<ARRAYSIZE); c++, distance=miles_per_sample*(double)c)
 	{
-		beta=distance/EARTHRADIUS_MILE;
+		beta=distance/(EARTHRADIUS_METER*MILE_PER_METER);
 		lat2=asin(sin(lat1)*cos(beta)+cos(azimuth)*sin(beta)*cos(lat1));
 		num=cos(beta)-(sin(lat1)*sin(lat2));
 		den=cos(lat1)*cos(lat2);
@@ -526,7 +526,7 @@ double AverageTerrain(site_t * source, double azimuthx, double start_distance, d
 	/* Generate a path of elevations between the source
 	   location and the remote location provided. */
 
-	beta=end_distance/EARTHRADIUS_MILE;
+	beta=end_distance/(EARTHRADIUS_METER*MILE_PER_METER);
 
 	azimuth=DEG2RAD*azimuthx;
 
@@ -2374,7 +2374,7 @@ void PlotLRPath(site_t * source, site_t * destination, unsigned char mask_value,
 	
 	ReadPath(source,destination);
 
-	four_thirds_earth=FOUR_THIRDS*EARTHRADIUS_FOOT;
+	four_thirds_earth=FOUR_THIRDS*EARTHRADIUS_METER*FOOT_PER_METERS;
 
 	/* Copy elevations plus clutter along path into the elev[] array. */
 
@@ -6221,7 +6221,7 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 
 	sprintf(report_name,"%s-to-%s.txt",site_get_name(source),site_get_name(destination));
 
-	four_thirds_earth=FOUR_THIRDS*EARTHRADIUS_FOOT;
+	four_thirds_earth=FOUR_THIRDS*EARTHRADIUS_METER*FOOT_PER_METERS;
 
 	for (x=0; report_name[x]!=0; x++)
 		if (report_name[x]==32 || report_name[x]==17 || report_name[x]==92 || report_name[x]==42 || report_name[x]==47)
@@ -7439,7 +7439,7 @@ int main(int argc, char *argv[])
 	ano_filename[0]=0;
 	ani_filename[0]=0;
 	smooth_contours=0;
-	earthradius=EARTHRADIUS_FOOT;
+	earthradius=EARTHRADIUS_METER*FOOT_PER_METERS;
 
 	ippd=IPPD;		/* pixels per degree (integer) */
 	ppd=(double)ippd;	/* pixels per degree (double)  */
