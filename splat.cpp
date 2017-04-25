@@ -7253,8 +7253,8 @@ void WriteKML(site_t * source, site_t * destination)
 	for (y=0; y<path.length; y++)
 	{
 		distance=FOOT_PER_MILE*path.distance[y];
-		tx_alt=earthradius*FOOT_PER_METERS+site_get_alt(source)*FOOT_PER_METERS+path.elevation[0];
-		rx_alt=earthradius*FOOT_PER_METERS+site_get_alt(destination)*FOOT_PER_METERS+path.elevation[y];
+		tx_alt=earthradius+site_get_alt(source)+METERS_PER_FOOT*path.elevation[0];
+		rx_alt=earthradius+site_get_alt(destination)+METERS_PER_FOOT*path.elevation[y];
 
 		/* Calculate the cosine of the elevation of the
 		   transmitter as seen at the temp rx point. */
@@ -7263,8 +7263,8 @@ void WriteKML(site_t * source, site_t * destination)
 
 		for (x=y, block=0; x>=0 && block==0; x--)
 		{
-			distance=FOOT_PER_MILE*(path.distance[y]-path.distance[x]);
-			test_alt=earthradius*FOOT_PER_METERS+path.elevation[x];
+			distance=METERS_PER_FOOT*FOOT_PER_MILE*(path.distance[y]-path.distance[x]);
+			test_alt=earthradius+METERS_PER*FOOT*path.elevation[x];
 
 			cos_test_angle=((rx_alt*rx_alt)+(distance*distance)-(test_alt*test_alt))/(2.0*rx_alt*distance);
 
