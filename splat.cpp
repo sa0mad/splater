@@ -229,7 +229,7 @@ char *dec2dms(double decimal)
 double Distance(site_t * site1, site_t * site2)
 {
 	/* This function returns the great circle distance
-	   in miles between any two site locations. */
+	   in meters between any two site locations. */
 
 	double	lat1, lon1, lat2, lon2, distance;
 
@@ -238,7 +238,7 @@ double Distance(site_t * site1, site_t * site2)
 	lat2=site_get_lat_rad(site2);
 	lon2=site_get_lon_rad(site2);
 
-	distance=EARTHRADIUS_METER*MILE_PER_METER*acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos((lon1)-(lon2)));
+	distance=EARTHRADIUS_METER*acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos((lon1)-(lon2)));
 
 	return distance;
 }
@@ -309,7 +309,7 @@ double ElevationAngle(site_t * source, site_t * destination)
 	a=FOOT_PER_METERS*dem_get_elevation_loc(destination)+site_get_alt(destination)+earthradius;
 	b=FOOT_PER_METERS*dem_get_elevation_loc(source)+site_get_alt(source)+earthradius;
 
- 	dx=FOOT_PER_MILE*Distance(source,destination);
+ 	dx=FOOT_PER_MILE*MILE_PER_METER*Distance(source,destination);
 
 	/* Apply the Law of Cosines */
 
@@ -346,7 +346,7 @@ void ReadPath(site_t * source, site_t * destination)
 
 	azimuth=Azimuth(source,destination)*DEG2RAD;
 
-	total_distance=Distance(source,destination);
+	total_distance=MILE_PER_METER*Distance(source,destination);
 
 	if (total_distance>(30.0/ppd))		/* > 0.5 pixel distance */
 	{
@@ -454,7 +454,7 @@ double ElevationAngle2(site_t * source, site_t * destination, double er)
 
 	ReadPath(source,destination);
 
-	distance=FOOT_PER_MILE*Distance(source,destination);
+	distance=FOOT_PER_MILE*MILE_PER_METER*Distance(source,destination);
 	source_alt=er+site_get_alt(source)+FOOT_PER_METERS*dem_get_elevation_loc(source);
 	destination_alt=er+site_get_alt(destination)+FOOT_PER_METERS*dem_get_elevation_loc(destination);
 	source_alt2=source_alt*source_alt;
@@ -5389,13 +5389,13 @@ void GraphTerrain(site_t * source, site_t * destination, char *name)
 
 	if (metric)
 	{
-		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",site_get_name(destination),site_get_name(source),KM_PER_MILE*Distance(source,destination));
+		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",site_get_name(destination),site_get_name(source),KM_PER_MILE*MILE_PER_METER*Distance(source,destination));
 		fprintf(fd,"set ylabel \"Ground Elevation Above Sea Level (meters)\"\n");
 	}
 
 	else
 	{
-		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f miles)\"\n",site_get_name(destination),site_get_name(source),Distance(source,destination));
+		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f miles)\"\n",site_get_name(destination),site_get_name(source),MILE_PER_METER*Distance(source,destination));
 		fprintf(fd,"set ylabel \"Ground Elevation Above Sea Level (feet)\"\n");
 	}
 
@@ -5454,7 +5454,7 @@ void GraphElevation(site_t * source, site_t * destination, char *name)
 
 	ReadPath(destination,source);  /* destination=RX, source=TX */
 	refangle=ElevationAngle(destination,source);
-	distance=Distance(source,destination);
+	distance=MILE_PER_METER*Distance(source,destination);
 
 	fd=fopen("profile.gp","wb");
 
@@ -5665,7 +5665,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 	
 	ReadPath(destination,source);  /* destination=RX, source=TX */
 	azimuth=Azimuth(destination,source);
-	distance=Distance(destination,source);
+	distance=MILE_PER_METER*Distance(destination,source);
 	refangle=ElevationAngle(destination,source);
 	b=FOOT_PER_METERS*dem_get_elevation_loc(destination)+site_get_alt(destination)+earthradius;
 
@@ -5709,7 +5709,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 			terrain += site_get_alt(destination);  /* RX antenna spike */
 
 		a=terrain+earthradius;
- 		cangle=FOOT_PER_MILE*Distance(destination,remote)/earthradius;
+ 		cangle=FOOT_PER_MILE*MILE_PER_METER*Distance(destination,remote)/earthradius;
 		c=b*sin(refangle*DEG2RAD+HALFPI)/sin(HALFPI-refangle*DEG2RAD-cangle);
 
 		height=a-c;
@@ -5935,9 +5935,9 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 		fprintf(fd,"set title \"%s Height Profile Between %s and %s (%.2f%c azimuth)\"\n",splat_name, site_get_name(destination), site_get_name(source), azimuth,176);
 
 	if (metric)
-		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",site_get_name(destination),site_get_name(source),KM_PER_MILE*Distance(source,destination));
+		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",site_get_name(destination),site_get_name(source),KM_PER_MILE*MILE_PER_METER*Distance(source,destination));
 	else
-		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f miles)\"\n",site_get_name(destination),site_get_name(source),Distance(source,destination));
+		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f miles)\"\n",site_get_name(destination),site_get_name(source),MILE_PER_METER*Distance(source,destination));
 
 	if (normalized)
 	{
@@ -6042,7 +6042,7 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 	h_r_fpt6=h_r;
 	h_r_orig=h_r;
 	h_t=FOOT_PER_METERS*dem_get_elevation_loc(xmtr)+site_get_alt(xmtr)+earthradius;
-	d_tx=FOOT_PER_MILE*Distance(rcvr,xmtr);
+	d_tx=FOOT_PER_MILE*MILE_PER_METER*Distance(rcvr,xmtr);
 	cos_tx_angle=((h_r*h_r)+(d_tx*d_tx)-(h_t*h_t))/(2.0*h_r*d_tx);
 	cos_tx_angle_f1=cos_tx_angle;
 	cos_tx_angle_fpt6=cos_tx_angle;
@@ -6081,7 +6081,7 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 		site_set_pos(site_x, path.lat[x], path.lon[x], 0.0);
 
 		h_x=FOOT_PER_METERS*dem_get_elevation_loc(site_x)+earthradius+clutter;
-		d_x=FOOT_PER_MILE*Distance(rcvr,site_x);
+		d_x=FOOT_PER_MILE*MILE_PER_METER*Distance(rcvr,site_x);
 
 		/* Deal with the LOS path first. */
 
@@ -6285,10 +6285,10 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 	}
 
 	if (metric)
-		fprintf(fd2,"Distance to %s: %.2f kilometers\n",site_get_name(destination),KM_PER_MILE*Distance(source,destination));
+		fprintf(fd2,"Distance to %s: %.2f kilometers\n",site_get_name(destination),KM_PER_MILE*MILE_PER_METER*Distance(source,destination));
 
 	else
-		fprintf(fd2,"Distance to %s: %.2f miles\n",site_get_name(destination),Distance(source,destination));
+		fprintf(fd2,"Distance to %s: %.2f miles\n",site_get_name(destination),MILE_PER_METER*Distance(source,destination));
 
 	fprintf(fd2,"Azimuth to %s: %.2f degrees\n",site_get_name(destination),azimuth);
 
@@ -6351,10 +6351,10 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 	}
 
 	if (metric)
-		fprintf(fd2,"Distance to %s: %.2f kilometers\n",site_get_name(source),KM_PER_MILE*Distance(source,destination));
+		fprintf(fd2,"Distance to %s: %.2f kilometers\n",site_get_name(source),KM_PER_MILE*MILE_PER_METER*Distance(source,destination));
 
 	else
-		fprintf(fd2,"Distance to %s: %.2f miles\n",site_get_name(source),Distance(source,destination));
+		fprintf(fd2,"Distance to %s: %.2f miles\n",site_get_name(source),MILE_PER_METER*Distance(source,destination));
 
 	azimuth=Azimuth(destination,source);
 
@@ -6613,7 +6613,7 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 
 		fclose(fd);
 
-		distance=Distance(source,destination);
+		distance=MILE_PER_METER*Distance(source,destination);
 
 
 		if (distance!=0.0)
@@ -6793,9 +6793,9 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 		fprintf(fd,"set title \"%s Loss Profile Along Path Between %s and %s (%.2f%c azimuth)\"\n",splat_name, site_get_name(destination), site_get_name(source), Azimuth(destination,source),176);
 
 		if (metric)
-			fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",site_get_name(destination),site_get_name(source),KM_PER_MILE*Distance(destination,source));
+			fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",site_get_name(destination),site_get_name(source),KM_PER_MILE*MILE_PER_METER*Distance(destination,source));
 		else
-			fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f miles)\"\n",site_get_name(destination),site_get_name(source),Distance(destination,source));
+			fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f miles)\"\n",site_get_name(destination),site_get_name(source),MILE_PER_METER*Distance(destination,source));
 
 		if (got_azimuth_pattern || got_elevation_pattern)
 			fprintf(fd,"set ylabel \"Total Path Loss (including TX antenna pattern) (dB)");
@@ -7137,7 +7137,7 @@ void WriteKML(site_t * source, site_t * destination)
 	fprintf(fd,"       <BR>%s West</BR>\n",dec2dms(site_get_lon_deg(source)));
 
 	azimuth=Azimuth(source,destination);
-	distance=Distance(source,destination);
+	distance=MILE_PER_METER*Distance(source,destination);
 
 	if (metric)
 		fprintf(fd,"       <BR>%.2f km",distance*KM_PER_MILE);
