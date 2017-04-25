@@ -309,7 +309,7 @@ double ElevationAngle(site_t * source, site_t * destination)
 	a=FOOT_PER_METERS*dem_get_elevation_loc(destination)+site_get_alt(destination)+earthradius;
 	b=FOOT_PER_METERS*dem_get_elevation_loc(source)+site_get_alt(source)+earthradius;
 
- 	dx=FOOT_PER_MILE*MILE_PER_METER*Distance(source,destination);
+ 	dx=FOOT_PER_METERS*Distance(source,destination);
 
 	/* Apply the Law of Cosines */
 
@@ -454,7 +454,7 @@ double ElevationAngle2(site_t * source, site_t * destination, double er)
 
 	ReadPath(source,destination);
 
-	distance=FOOT_PER_MILE*MILE_PER_METER*Distance(source,destination);
+	distance=FOOT_PER_METERS*Distance(source,destination);
 	source_alt=er+site_get_alt(source)+FOOT_PER_METERS*dem_get_elevation_loc(source);
 	destination_alt=er+site_get_alt(destination)+FOOT_PER_METERS*dem_get_elevation_loc(destination);
 	source_alt2=source_alt*source_alt;
@@ -5709,7 +5709,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 			terrain += site_get_alt(destination);  /* RX antenna spike */
 
 		a=terrain+earthradius;
- 		cangle=FOOT_PER_MILE*MILE_PER_METER*Distance(destination,remote)/earthradius;
+ 		cangle=FOOT_PER_METERS*Distance(destination,remote)/earthradius;
 		c=b*sin(refangle*DEG2RAD+HALFPI)/sin(HALFPI-refangle*DEG2RAD-cangle);
 
 		height=a-c;
@@ -6042,7 +6042,7 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 	h_r_fpt6=h_r;
 	h_r_orig=h_r;
 	h_t=FOOT_PER_METERS*dem_get_elevation_loc(xmtr)+site_get_alt(xmtr)+earthradius;
-	d_tx=FOOT_PER_MILE*MILE_PER_METER*Distance(rcvr,xmtr);
+	d_tx=FOOT_PER_METERS*Distance(rcvr,xmtr);
 	cos_tx_angle=((h_r*h_r)+(d_tx*d_tx)-(h_t*h_t))/(2.0*h_r*d_tx);
 	cos_tx_angle_f1=cos_tx_angle;
 	cos_tx_angle_fpt6=cos_tx_angle;
@@ -6081,7 +6081,7 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 		site_set_pos(site_x, path.lat[x], path.lon[x], 0.0);
 
 		h_x=FOOT_PER_METERS*dem_get_elevation_loc(site_x)+earthradius+clutter;
-		d_x=FOOT_PER_MILE*MILE_PER_METER*Distance(rcvr,site_x);
+		d_x=FOOT_PER_METERS*Distance(rcvr,site_x);
 
 		/* Deal with the LOS path first. */
 
