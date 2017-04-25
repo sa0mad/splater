@@ -994,8 +994,8 @@ site_t * LoadQTH(char *filename)
 		/* Antenna height may either be in feet or meters.
 		   If the letter 'M' or 'm' is discovered in
 		   the string, then this is an indication that
-		   the value given is expressed in meters, and
-		   must be converted to feet before exiting. */
+		   the value given is expressed in meters, else
+		   it must be converted from feet before exiting. */
 
 		for (x=0; string[x]!='M' && string[x]!='m' && string[x]!=0 && x<48; x++);
 
@@ -1003,15 +1003,15 @@ site_t * LoadQTH(char *filename)
 		{
 			string[x]=0;
 			sscanf(string,"%f",&alt);
-			alt *= FOOT_PER_METERS;
 		}
 
 		else
 		{
 			string[x]=0;
 			sscanf(string,"%f",&alt);
+			alt *= METERS_PER_FOOT;
 		}
-		site_set_pos(tempsite, lat, lon, alt*METERS_PER_FOOT);
+		site_set_pos(tempsite, lat, lon, alt);
 
 		filename2 = (char *)malloc(255*sizeof(char));
 		for (x=0; x<254 && qthfile[x]!=0; x++)
@@ -2614,7 +2614,7 @@ void PlotLOSMap(site_t * source, double altitude)
 	   transmitter site (source location), and plots the
 	   line-of-sight coverage of the transmitter on the SPLAT!
 	   generated topographic map based on a receiver located
-	   at the specified altitude (in feet AGL).  Results
+	   at the specified altitude (in meter AGL).  Results
 	   are stored in memory, and written out in the form
 	   of a topographic map when the WritePPM() function
 	   is later invoked. */
@@ -2634,7 +2634,7 @@ void PlotLOSMap(site_t * source, double altitude)
 
 	count=0;	
 
-	fprintf(stdout,"\nComputing line-of-sight coverage of \"%s\" with an RX antenna\nat %.2f %s AGL",site_get_name(source),metric?altitude*METERS_PER_FOOT:altitude,metric?"meters":"feet");
+ 	fprintf(stdout,"\nComputing line-of-sight coverage of \"%s\" with an RX antenna\nat %.2f %s AGL",site_get_name(source),metric?altitude:altitude*FOOT_PER_METERS,metric?"meters":"feet");
 
 	if (clutter>0.0)
 		fprintf(stdout," and %.2f %s of ground clutter",metric?clutter*METERS_PER_FOOT:clutter,metric?"meters":"feet");
@@ -2657,7 +2657,7 @@ void PlotLOSMap(site_t * source, double altitude)
 		if (lon>=360.0)
 			lon-=360.0;
 
-		site_set_pos(edge, max_north, lon, altitude*METERS_PER_FOOT);
+		site_set_pos(edge, max_north, lon, altitude);
 
 		PlotPath(source,edge,mask_value);
 		count++;
@@ -2683,7 +2683,7 @@ void PlotLOSMap(site_t * source, double altitude)
 
 	for (lat=maxnorth, x=0, y=0; lat>=(double)min_north; y++, lat=maxnorth-(dpp*(double)y))
 	{
-		site_set_pos(edge, lat, min_west, altitude*METERS_PER_FOOT);
+		site_set_pos(edge, lat, min_west, altitude);
 
 		PlotPath(source,edge,mask_value);
 		count++;
@@ -2712,7 +2712,7 @@ void PlotLOSMap(site_t * source, double altitude)
 		if (lon>=360.0)
 			lon-=360.0;
 
-		site_set_pos(edge, min_north, lon, altitude*METERS_PER_FOOT);
+		site_set_pos(edge, min_north, lon, altitude);
 
 		PlotPath(source,edge,mask_value);
 		count++;
@@ -2738,7 +2738,7 @@ void PlotLOSMap(site_t * source, double altitude)
 
 	for (lat=(double)min_north, x=0, y=0; lat<(double)max_north; y++, lat=(double)min_north+(dpp*(double)y))
 	{
-		site_set_pos(edge, lat, max_west, altitude*METERS_PER_FOOT);
+		site_set_pos(edge, lat, max_west, altitude);
 
 		PlotPath(source,edge,mask_value);
 		count++;
@@ -2783,7 +2783,7 @@ void PlotLRMap(site_t * source, double altitude, char *plo_filename)
 	   transmitter site (source location), and plots the
 	   Irregular Terrain Model attenuation on the SPLAT!
 	   generated topographic map based on a receiver located
-	   at the specified altitude (in feet AGL).  Results
+	   at the specified altitude (in meter AGL).  Results
 	   are stored in memory, and written out in the form
 	   of a topographic map when the WritePPMLR() or
 	   WritePPMSS() functions are later invoked. */
@@ -2820,7 +2820,7 @@ void PlotLRMap(site_t * source, double altitude, char *plo_filename)
 			fprintf(stdout,"field strength");
 	}
  
-	fprintf(stdout," contours of \"%s\"\nout to a radius of %.2f %s with an RX antenna at %.2f %s AGL",site_get_name(source),metric?max_range*KM_PER_MILE:max_range,metric?"kilometers":"miles",metric?altitude*METERS_PER_FOOT:altitude,metric?"meters":"feet");
+	fprintf(stdout," contours of \"%s\"\nout to a radius of %.2f %s with an RX antenna at %.2f %s AGL",site_get_name(source),metric?max_range*KM_PER_MILE:max_range,metric?"kilometers":"miles",metric?altitude:altitude*FOOT_PER_METERS,metric?"meters":"feet");
 
 	if (clutter>0.0)
 		fprintf(stdout,"\nand %.2f %s of ground clutter",metric?clutter*METERS_PER_FOOT:clutter,metric?"meters":"feet");
@@ -2850,7 +2850,7 @@ void PlotLRMap(site_t * source, double altitude, char *plo_filename)
 		if (lon>=360.0)
 			lon-=360.0;
 
-		site_set_pos(edge, max_north, lon, altitude*METERS_PER_FOOT);
+		site_set_pos(edge, max_north, lon, altitude);
 
 		PlotLRPath(source,edge,mask_value,fd);
 		count++;
@@ -2876,7 +2876,7 @@ void PlotLRMap(site_t * source, double altitude, char *plo_filename)
 
 	for (lat=maxnorth, x=0, y=0; lat>=(double)min_north; y++, lat=maxnorth-(dpp*(double)y))
 	{
-		site_set_pos(edge, lat, min_west, altitude*METERS_PER_FOOT);
+		site_set_pos(edge, lat, min_west, altitude);
 
 		PlotLRPath(source,edge,mask_value,fd);
 		count++;
@@ -2905,7 +2905,7 @@ void PlotLRMap(site_t * source, double altitude, char *plo_filename)
 		if (lon>=360.0)
 			lon-=360.0;
 
-		site_set_pos(edge, min_north, lon, altitude*METERS_PER_FOOT);
+		site_set_pos(edge, min_north, lon, altitude);
 
 		PlotLRPath(source,edge,mask_value,fd);
 		count++;
@@ -2931,7 +2931,7 @@ void PlotLRMap(site_t * source, double altitude, char *plo_filename)
 
 	for (lat=(double)min_north, x=0, y=0; lat<(double)max_north; y++, lat=(double)min_north+(dpp*(double)y))
 	{
-		site_set_pos(edge, lat, max_west, altitude*METERS_PER_FOOT);
+		site_set_pos(edge, lat, max_west, altitude);
 
 		PlotLRPath(source,edge,mask_value,fd);
 		count++;
@@ -5473,11 +5473,11 @@ void GraphElevation(site_t * source, site_t * destination, char *name)
 			double alt;
 
 			if (path.elevation[x]!=0.0)
-				alt = clutter;
+				alt = clutter*METERS_PER_FOOT;
 			else
 				alt = 0.0;
 			
-			site_set_pos(remote2, path.lat[x], path.lon[x], alt*METERS_PER_FOOT);
+			site_set_pos(remote2, path.lat[x], path.lon[x], alt);
 
 			clutter_angle=ElevationAngle(destination,remote2);
 		}
@@ -8296,10 +8296,10 @@ int main(int argc, char *argv[])
 		for (x=0; x<txsites && x<max_txsites; x++)
 		{
 			if (coverage)
-				PlotLOSMap(tx_site[x],altitude);
+				PlotLOSMap(tx_site[x],altitude*METERS_PER_FOOT);
 
 			else if (ReadLRParm(tx_site[x],1))
-					PlotLRMap(tx_site[x],altitudeLR,ano_filename);
+					PlotLRMap(tx_site[x],altitudeLR*METERS_PER_FOOT,ano_filename);
 
 			SiteReport(tx_site[x]);
 		}
