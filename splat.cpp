@@ -238,7 +238,7 @@ double Distance(site_t * site1, site_t * site2)
 	lat2=site_get_lat_rad(site2);
 	lon2=site_get_lon_rad(site2);
 
-	distance=3959.0*acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos((lon1)-(lon2)));
+	distance=EARTHRADIUS_MILE*acos(sin(lat1)*sin(lat2)+cos(lat1)*cos(lat2)*cos((lon1)-(lon2)));
 
 	return distance;
 }
@@ -378,7 +378,7 @@ void ReadPath(site_t * source, site_t * destination)
 
 	for (distance=0.0, c=0; (total_distance!=0.0 && distance<=total_distance && c<ARRAYSIZE); c++, distance=miles_per_sample*(double)c)
 	{
-		beta=distance/3959.0;
+		beta=distance/EARTHRADIUS_MILE;
 		lat2=asin(sin(lat1)*cos(beta)+cos(azimuth)*sin(beta)*cos(lat1));
 		num=cos(beta)-(sin(lat1)*sin(lat2));
 		den=cos(lat1)*cos(lat2);
@@ -526,7 +526,7 @@ double AverageTerrain(site_t * source, double azimuthx, double start_distance, d
 	/* Generate a path of elevations between the source
 	   location and the remote location provided. */
 
-	beta=end_distance/3959.0;
+	beta=end_distance/EARTHRADIUS_MILE;
 
 	azimuth=DEG2RAD*azimuthx;
 
