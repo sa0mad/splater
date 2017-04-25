@@ -306,10 +306,10 @@ double ElevationAngle(site_t * source, site_t * destination)
 	   
 	register double a, b, dx;
 
-	a=FOOT_PER_METERS*dem_get_elevation_loc(destination)+site_get_alt(destination)*FOOT_PER_METERS+earthradius;
-	b=FOOT_PER_METERS*dem_get_elevation_loc(source)+site_get_alt(source)*FOOT_PER_METERS+earthradius;
+	a=dem_get_elevation_loc(destination)+site_get_alt(destination)+earthradius;
+	b=dem_get_elevation_loc(source)+site_get_alt(source)+earthradius;
 
- 	dx=FOOT_PER_METERS*Distance(source,destination);
+ 	dx=Distance(source,destination);
 
 	/* Apply the Law of Cosines */
 
@@ -454,9 +454,9 @@ double ElevationAngle2(site_t * source, site_t * destination, double er)
 
 	ReadPath(source,destination);
 
-	distance=FOOT_PER_METERS*Distance(source,destination);
-	source_alt=er+site_get_alt(source)*FOOT_PER_METERS+FOOT_PER_METERS*dem_get_elevation_loc(source);
-	destination_alt=er+site_get_alt(destination)*FOOT_PER_METERS+FOOT_PER_METERS*dem_get_elevation_loc(destination);
+	distance=Distance(source,destination);
+	source_alt=er+site_get_alt(source)+dem_get_elevation_loc(source);
+	destination_alt=er+site_get_alt(destination)+dem_get_elevation_loc(destination);
 	source_alt2=source_alt*source_alt;
 
 	/* Calculate the cosine of the elevation angle of the
@@ -474,7 +474,7 @@ double ElevationAngle2(site_t * source, site_t * destination, double er)
 	{
 		distance=FOOT_PER_MILE*path.distance[x];
 
-		test_alt=earthradius+(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+clutter);
+		test_alt=earthradius+METERS_PER_FOOT*(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+clutter);
 
 		cos_test_angle=((source_alt2)+(distance*distance)-(test_alt*test_alt))/(2.0*source_alt*distance);
 
@@ -2322,9 +2322,9 @@ void PlotPath(site_t * source, site_t * destination, char mask_value)
 
 		if ((dem_get_mask_pos(path.lat[y],path.lon[y])&mask_value)==0)
 		{
-			distance=FOOT_PER_MILE*path.distance[y];
-			tx_alt=earthradius+site_get_alt(source)*FOOT_PER_METERS+path.elevation[0];
-			rx_alt=earthradius+site_get_alt(destination)*FOOT_PER_METERS+path.elevation[y];
+			distance=METERS_PER_FOOT*FOOT_PER_MILE*path.distance[y];
+			tx_alt=earthradius+site_get_alt(source)+METERS_PER_FOOT*path.elevation[0];
+			rx_alt=earthradius+site_get_alt(destination)+METERS_PER_FOOT*path.elevation[y];
 
 			/* Calculate the cosine of the elevation of the
 			   transmitter as seen at the temp rx point. */
@@ -2334,7 +2334,7 @@ void PlotPath(site_t * source, site_t * destination, char mask_value)
 			for (x=y, block=0; x>=0 && block==0; x--)
 			{
 				distance=FOOT_PER_MILE*(path.distance[y]-path.distance[x]);
-				test_alt=earthradius+(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+clutter);
+				test_alt=earthradius+METERS_PER_FOOT*(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+clutter);
 
 				cos_test_angle=((rx_alt*rx_alt)+(distance*distance)-(test_alt*test_alt))/(2.0*rx_alt*distance);
 
@@ -5667,7 +5667,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 	azimuth=Azimuth(destination,source);
 	distance=MILE_PER_METER*Distance(destination,source);
 	refangle=ElevationAngle(destination,source);
-	b=FOOT_PER_METERS*dem_get_elevation_loc(destination)+site_get_alt(destination)*FOOT_PER_METERS+earthradius;
+	b=FOOT_PER_METERS*dem_get_elevation_loc(destination)+site_get_alt(destination)*FOOT_PER_METERS+earthradius*FOOT_PER_METERS;
 
 	/* Wavelength and path distance (great circle) in feet. */
 
@@ -5708,8 +5708,8 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 		if (x==0)
 			terrain += site_get_alt(destination)*FOOT_PER_METERS;  /* RX antenna spike */
 
-		a=terrain+earthradius;
- 		cangle=FOOT_PER_METERS*Distance(destination,remote)/earthradius;
+		a=terrain+earthradius*FOOT_PER_METERS;
+ 		cangle=FOOT_PER_METERS*Distance(destination,remote)/(earthradius*FOOT_PER_METERS);
 		c=b*sin(refangle*DEG2RAD+HALFPI)/sin(HALFPI-refangle*DEG2RAD-cangle);
 
 		height=a-c;
@@ -6037,11 +6037,11 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 	site_x = site_alloc();
 
 	ReadPath(xmtr,rcvr);
-	h_r=FOOT_PER_METERS*dem_get_elevation_loc(rcvr)+FOOT_PER_METERS*site_get_alt(rcvr)+earthradius;
+	h_r=FOOT_PER_METERS*dem_get_elevation_loc(rcvr)+FOOT_PER_METERS*site_get_alt(rcvr)+earthradius*FOOT_PER_METERS;
 	h_r_f1=h_r;
 	h_r_fpt6=h_r;
 	h_r_orig=h_r;
-	h_t=FOOT_PER_METERS*dem_get_elevation_loc(xmtr)+FOOT_PER_METERS*site_get_alt(xmtr)+earthradius;
+	h_t=FOOT_PER_METERS*dem_get_elevation_loc(xmtr)+FOOT_PER_METERS*site_get_alt(xmtr)+earthradius*FOOT_PER_METERS;
 	d_tx=FOOT_PER_METERS*Distance(rcvr,xmtr);
 	cos_tx_angle=((h_r*h_r)+(d_tx*d_tx)-(h_t*h_t))/(2.0*h_r*d_tx);
 	cos_tx_angle_f1=cos_tx_angle;
@@ -6080,7 +6080,7 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 	{
 		site_set_pos(site_x, path.lat[x], path.lon[x], 0.0);
 
-		h_x=FOOT_PER_METERS*dem_get_elevation_loc(site_x)+earthradius+clutter;
+		h_x=FOOT_PER_METERS*dem_get_elevation_loc(site_x)+earthradius*FOOT_PER_METERS+clutter;
 		d_x=FOOT_PER_METERS*Distance(rcvr,site_x);
 
 		/* Deal with the LOS path first. */
@@ -6102,9 +6102,9 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 			}
 			
 			if (metric)
-				fprintf(outfile,"%5.2f kilometers, %6.2f meters AMSL\n", KM_PER_MILE*(d_x/FOOT_PER_MILE), METERS_PER_FOOT*(h_x-earthradius));
+				fprintf(outfile,"%5.2f kilometers, %6.2f meters AMSL\n", KM_PER_MILE*(d_x/FOOT_PER_MILE), METERS_PER_FOOT*h_x-earthradius);
 			else
-				fprintf(outfile,"%5.2f miles, %6.2f feet AMSL\n", d_x/FOOT_PER_MILE, h_x-earthradius);
+				fprintf(outfile,"%5.2f miles, %6.2f feet AMSL\n", d_x/FOOT_PER_MILE, h_x-earthradius*FOOT_PER_METERS);
 		}
 
 		while (cos_tx_angle>cos_test_angle)
@@ -6149,9 +6149,9 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 	if (h_r>h_r_orig)
 	{
 		if (metric)
-			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear all obstructions detected by %s.\n",site_get_name(rcvr), METERS_PER_FOOT*h_r-dem_get_elevation_loc(rcvr)-METERS_PER_FOOT*earthradius,splat_name);
+			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear all obstructions detected by %s.\n",site_get_name(rcvr), METERS_PER_FOOT*h_r-dem_get_elevation_loc(rcvr)-earthradius,splat_name);
 		else
-			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear all obstructions detected by %s.\n",site_get_name(rcvr), h_r-FOOT_PER_METERS*dem_get_elevation_loc(rcvr)-earthradius,splat_name);
+			snprintf(string,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear all obstructions detected by %s.\n",site_get_name(rcvr), h_r-FOOT_PER_METERS*dem_get_elevation_loc(rcvr)-earthradius*FOOT_PER_METERS,splat_name);
 	}
 
 	else
@@ -6162,10 +6162,10 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 		if (h_r_fpt6>h_r_orig)
 		{
 			if (metric)
-				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear %.0f%c of the first Fresnel zone.\n",site_get_name(rcvr), METERS_PER_FOOT*h_r_fpt6-dem_get_elevation_loc(rcvr)-METERS_PER_FOOT*earthradius,fzone_clearance*100.0,37);
+				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear %.0f%c of the first Fresnel zone.\n",site_get_name(rcvr), METERS_PER_FOOT*h_r_fpt6-dem_get_elevation_loc(rcvr)-earthradius,fzone_clearance*100.0,37);
 
 			else
-				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear %.0f%c of the first Fresnel zone.\n",site_get_name(rcvr), h_r_fpt6-FOOT_PER_METERS*dem_get_elevation_loc(rcvr)-earthradius,fzone_clearance*100.0,37);
+				snprintf(string_fpt6,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear %.0f%c of the first Fresnel zone.\n",site_get_name(rcvr), h_r_fpt6-FOOT_PER_METERS*dem_get_elevation_loc(rcvr)-earthradius*FOOT_PER_METERS,fzone_clearance*100.0,37);
 		}
 
 		else
@@ -6174,10 +6174,10 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 		if (h_r_f1>h_r_orig)
 		{
 			if (metric)
-				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear the first Fresnel zone.\n",site_get_name(rcvr), METERS_PER_FOOT*h_r_f1-dem_get_elevation_loc(rcvr)-METERS_PER_FOOT*earthradius);
+				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f meters AGL\nto clear the first Fresnel zone.\n",site_get_name(rcvr), METERS_PER_FOOT*h_r_f1-dem_get_elevation_loc(rcvr)-earthradius);
 
 			else			
-				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear the first Fresnel zone.\n",site_get_name(rcvr), h_r_f1-FOOT_PER_METERS*dem_get_elevation_loc(rcvr)-earthradius);
+				snprintf(string_f1,150,"\nAntenna at %s must be raised to at least %.2f feet AGL\nto clear the first Fresnel zone.\n",site_get_name(rcvr), h_r_f1-FOOT_PER_METERS*dem_get_elevation_loc(rcvr)-earthradius*FOOT_PER_METERS);
 
 		}
 
@@ -7253,8 +7253,8 @@ void WriteKML(site_t * source, site_t * destination)
 	for (y=0; y<path.length; y++)
 	{
 		distance=FOOT_PER_MILE*path.distance[y];
-		tx_alt=earthradius+site_get_alt(source)*FOOT_PER_METERS+path.elevation[0];
-		rx_alt=earthradius+site_get_alt(destination)*FOOT_PER_METERS+path.elevation[y];
+		tx_alt=earthradius*FOOT_PER_METERS+site_get_alt(source)*FOOT_PER_METERS+path.elevation[0];
+		rx_alt=earthradius*FOOT_PER_METERS+site_get_alt(destination)*FOOT_PER_METERS+path.elevation[y];
 
 		/* Calculate the cosine of the elevation of the
 		   transmitter as seen at the temp rx point. */
@@ -7264,7 +7264,7 @@ void WriteKML(site_t * source, site_t * destination)
 		for (x=y, block=0; x>=0 && block==0; x--)
 		{
 			distance=FOOT_PER_MILE*(path.distance[y]-path.distance[x]);
-			test_alt=earthradius+path.elevation[x];
+			test_alt=earthradius*FOOT_PER_METERS+path.elevation[x];
 
 			cos_test_angle=((rx_alt*rx_alt)+(distance*distance)-(test_alt*test_alt))/(2.0*rx_alt*distance);
 
@@ -7439,7 +7439,7 @@ int main(int argc, char *argv[])
 	ano_filename[0]=0;
 	ani_filename[0]=0;
 	smooth_contours=0;
-	earthradius=EARTHRADIUS_METER*FOOT_PER_METERS;
+	earthradius=EARTHRADIUS_METER;
 
 	ippd=IPPD;		/* pixels per degree (integer) */
 	ppd=(double)ippd;	/* pixels per degree (double)  */
