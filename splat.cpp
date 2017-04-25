@@ -309,7 +309,7 @@ double ElevationAngle(site_t * source, site_t * destination)
 	a=FOOT_PER_METERS*dem_get_elevation_loc(destination)+site_get_alt(destination)+earthradius;
 	b=FOOT_PER_METERS*dem_get_elevation_loc(source)+site_get_alt(source)+earthradius;
 
- 	dx=5280.0*Distance(source,destination);
+ 	dx=FOOT_PER_MILE*Distance(source,destination);
 
 	/* Apply the Law of Cosines */
 
@@ -454,7 +454,7 @@ double ElevationAngle2(site_t * source, site_t * destination, double er)
 
 	ReadPath(source,destination);
 
-	distance=5280.0*Distance(source,destination);
+	distance=FOOT_PER_MILE*Distance(source,destination);
 	source_alt=er+site_get_alt(source)+FOOT_PER_METERS*dem_get_elevation_loc(source);
 	destination_alt=er+site_get_alt(destination)+FOOT_PER_METERS*dem_get_elevation_loc(destination);
 	source_alt2=source_alt*source_alt;
@@ -472,7 +472,7 @@ double ElevationAngle2(site_t * source, site_t * destination, double er)
  
 	for (x=2, block=0; x<path.length && block==0; x++)
 	{
-		distance=5280.0*path.distance[x];
+		distance=FOOT_PER_MILE*path.distance[x];
 
 		test_alt=earthradius+(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+clutter);
 
@@ -2322,7 +2322,7 @@ void PlotPath(site_t * source, site_t * destination, char mask_value)
 
 		if ((dem_get_mask_pos(path.lat[y],path.lon[y])&mask_value)==0)
 		{
-			distance=5280.0*path.distance[y];
+			distance=FOOT_PER_MILE*path.distance[y];
 			tx_alt=earthradius+site_get_alt(source)+path.elevation[0];
 			rx_alt=earthradius+site_get_alt(destination)+path.elevation[y];
 
@@ -2333,7 +2333,7 @@ void PlotPath(site_t * source, site_t * destination, char mask_value)
 
 			for (x=y, block=0; x>=0 && block==0; x--)
 			{
-				distance=5280.0*(path.distance[y]-path.distance[x]);
+				distance=FOOT_PER_MILE*(path.distance[y]-path.distance[x]);
 				test_alt=earthradius+(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+clutter);
 
 				cos_test_angle=((rx_alt*rx_alt)+(distance*distance)-(test_alt*test_alt))/(2.0*rx_alt*distance);
@@ -2403,7 +2403,7 @@ void PlotLRPath(site_t * source, site_t * destination, unsigned char mask_value,
 
 		if ((dem_get_mask_pos(path.lat[y],path.lon[y])&248)!=(mask_value<<3))
 		{
-			distance=5280.0*path.distance[y];
+			distance=FOOT_PER_MILE*path.distance[y];
 			xmtr_alt=four_thirds_earth+site_get_alt(source)+path.elevation[0];
 			dest_alt=four_thirds_earth+site_get_alt(destination)+path.elevation[y];
 			dest_alt2=dest_alt*dest_alt;
@@ -2428,7 +2428,7 @@ void PlotLRPath(site_t * source, site_t * destination, unsigned char mask_value,
 
 				for (x=2, block=0; (x<y && block==0); x++)
 				{
-					distance=5280.0*path.distance[x];
+					distance=FOOT_PER_MILE*path.distance[x];
 
 					test_alt=four_thirds_earth+(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+clutter);
 
@@ -5674,7 +5674,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 	if (fresnel_plot)
 	{
 		lambda=9.8425e8/(LR.frq_mhz*1e6);
-		d=5280.0*path.distance[path.length-1];
+		d=FOOT_PER_MILE*path.distance[path.length-1];
 	}
 
 	if (normalized)
@@ -5709,7 +5709,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 			terrain += site_get_alt(destination);  /* RX antenna spike */
 
 		a=terrain+earthradius;
- 		cangle=5280.0*Distance(destination,remote)/earthradius;
+ 		cangle=FOOT_PER_MILE*Distance(destination,remote)/earthradius;
 		c=b*sin(refangle*DEG2RAD+HALFPI)/sin(HALFPI-refangle*DEG2RAD-cangle);
 
 		height=a-c;
@@ -5725,7 +5725,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 
 		if ((LR.frq_mhz>=20.0) && (LR.frq_mhz<=20000.0) && fresnel_plot)
 		{
-			d1=5280.0*path.distance[x];
+			d1=FOOT_PER_MILE*path.distance[x];
 			f_zone=-1.0*sqrt(lambda*d1*(d-d1)/d);
 			fpt6_zone=f_zone*fzone_clearance;
 		}
@@ -6042,7 +6042,7 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 	h_r_fpt6=h_r;
 	h_r_orig=h_r;
 	h_t=FOOT_PER_METERS*dem_get_elevation_loc(xmtr)+site_get_alt(xmtr)+earthradius;
-	d_tx=5280.0*Distance(rcvr,xmtr);
+	d_tx=FOOT_PER_MILE*Distance(rcvr,xmtr);
 	cos_tx_angle=((h_r*h_r)+(d_tx*d_tx)-(h_t*h_t))/(2.0*h_r*d_tx);
 	cos_tx_angle_f1=cos_tx_angle;
 	cos_tx_angle_fpt6=cos_tx_angle;
@@ -6081,7 +6081,7 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 		site_set_pos(site_x, path.lat[x], path.lon[x], 0.0);
 
 		h_x=FOOT_PER_METERS*dem_get_elevation_loc(site_x)+earthradius+clutter;
-		d_x=5280.0*Distance(rcvr,site_x);
+		d_x=FOOT_PER_MILE*Distance(rcvr,site_x);
 
 		/* Deal with the LOS path first. */
 
@@ -6095,18 +6095,18 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 			if (site_get_lat_deg(site_x) >= 0.0)
 			{
 				if (metric)
-					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",site_get_lat_deg(site_x), site_get_lon_deg(site_x), KM_PER_MILE*(d_x/5280.0), METERS_PER_FOOT*(h_x-earthradius));
+					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",site_get_lat_deg(site_x), site_get_lon_deg(site_x), KM_PER_MILE*(d_x/FOOT_PER_MILE), METERS_PER_FOOT*(h_x-earthradius));
 				else
-					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",site_get_lat_deg(site_x), site_get_lon_deg(site_x), d_x/5280.0, h_x-earthradius);
+					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",site_get_lat_deg(site_x), site_get_lon_deg(site_x), d_x/FOOT_PER_MILE, h_x-earthradius);
 			}
 
 			else
 			{
 				if (metric)
-					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",-site_get_lat_deg(site_x), site_get_lon_deg(site_x), KM_PER_MILE*(d_x/5280.0), METERS_PER_FOOT*(h_x-earthradius));
+					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",-site_get_lat_deg(site_x), site_get_lon_deg(site_x), KM_PER_MILE*(d_x/FOOT_PER_MILE), METERS_PER_FOOT*(h_x-earthradius));
 				else
 
-					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",-site_get_lat_deg(site_x), site_get_lon_deg(site_x), d_x/5280.0, h_x-earthradius);
+					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",-site_get_lat_deg(site_x), site_get_lon_deg(site_x), d_x/FOOT_PER_MILE, h_x-earthradius);
 			}
 		}
 
@@ -6509,7 +6509,7 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 
 		for (y=2; y<(path.length-1); y++)  /* path.length-1 avoids LR error */
 		{
-			distance=5280.0*path.distance[y];
+			distance=FOOT_PER_MILE*path.distance[y];
 			source_alt=four_thirds_earth+site_get_alt(source)+path.elevation[0];
 			dest_alt=four_thirds_earth+site_get_alt(destination)+path.elevation[y];
 			dest_alt2=dest_alt*dest_alt;
@@ -6528,7 +6528,7 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 
 				for (x=2, block=0; x<y && block==0; x++)
 				{
-					distance=5280.0*(path.distance[y]-path.distance[x]);
+					distance=FOOT_PER_MILE*(path.distance[y]-path.distance[x]);
 					test_alt=four_thirds_earth+path.elevation[x];
 
 					/* Calculate the cosine of the elevation
@@ -7255,7 +7255,7 @@ void WriteKML(site_t * source, site_t * destination)
 
 	for (y=0; y<path.length; y++)
 	{
-		distance=5280.0*path.distance[y];
+		distance=FOOT_PER_MILE*path.distance[y];
 		tx_alt=earthradius+site_get_alt(source)+path.elevation[0];
 		rx_alt=earthradius+site_get_alt(destination)+path.elevation[y];
 
@@ -7266,7 +7266,7 @@ void WriteKML(site_t * source, site_t * destination)
 
 		for (x=y, block=0; x>=0 && block==0; x--)
 		{
-			distance=5280.0*(path.distance[y]-path.distance[x]);
+			distance=FOOT_PER_MILE*(path.distance[y]-path.distance[x]);
 			test_alt=earthradius+path.elevation[x];
 
 			cos_test_angle=((rx_alt*rx_alt)+(distance*distance)-(test_alt*test_alt))/(2.0*rx_alt*distance);
