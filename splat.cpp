@@ -6094,20 +6094,17 @@ void ObstructionAnalysis(site_t * xmtr, site_t * rcvr, double f, FILE *outfile)
 
 			if (site_get_lat_deg(site_x) >= 0.0)
 			{
-				if (metric)
-					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",site_get_lat_deg(site_x), site_get_lon_deg(site_x), KM_PER_MILE*(d_x/FOOT_PER_MILE), METERS_PER_FOOT*(h_x-earthradius));
-				else
-					fprintf(outfile,"   %8.4f N,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",site_get_lat_deg(site_x), site_get_lon_deg(site_x), d_x/FOOT_PER_MILE, h_x-earthradius);
+				fprintf(outfile,"   %8.4f N,%9.4f W, ",site_get_lat_deg(site_x), site_get_lon_deg(site_x));
 			}
-
 			else
 			{
-				if (metric)
-					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f kilometers, %6.2f meters AMSL\n",-site_get_lat_deg(site_x), site_get_lon_deg(site_x), KM_PER_MILE*(d_x/FOOT_PER_MILE), METERS_PER_FOOT*(h_x-earthradius));
-				else
-
-					fprintf(outfile,"   %8.4f S,%9.4f W, %5.2f miles, %6.2f feet AMSL\n",-site_get_lat_deg(site_x), site_get_lon_deg(site_x), d_x/FOOT_PER_MILE, h_x-earthradius);
+				fprintf(outfile,"   %8.4f S,%9.4f W, ",-site_get_lat_deg(site_x), site_get_lon_deg(site_x));
 			}
+			
+			if (metric)
+				fprintf(outfile,"%5.2f kilometers, %6.2f meters AMSL\n", KM_PER_MILE*(d_x/FOOT_PER_MILE), METERS_PER_FOOT*(h_x-earthradius));
+			else
+				fprintf(outfile,"%5.2f miles, %6.2f feet AMSL\n", d_x/FOOT_PER_MILE, h_x-earthradius);
 		}
 
 		while (cos_tx_angle>cos_test_angle)
