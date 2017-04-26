@@ -2374,7 +2374,7 @@ void PlotLRPath(site_t * source, site_t * destination, unsigned char mask_value,
 	
 	ReadPath(source,destination);
 
-	four_thirds_earth=FOUR_THIRDS*EARTHRADIUS_METER*FOOT_PER_METERS;
+	four_thirds_earth=FOUR_THIRDS*EARTHRADIUS_METER;
 
 	/* Copy elevations plus clutter along path into the elev[] array. */
 
@@ -2404,8 +2404,8 @@ void PlotLRPath(site_t * source, site_t * destination, unsigned char mask_value,
 		if ((dem_get_mask_pos(path.lat[y],path.lon[y])&248)!=(mask_value<<3))
 		{
 			distance=path.distance[y];
-			xmtr_alt=METERS_PER_FOOT*four_thirds_earth+site_get_alt(source)+path.elevation[0];
-			dest_alt=METERS_PER_FOOT*four_thirds_earth+site_get_alt(destination)+path.elevation[y];
+			xmtr_alt=four_thirds_earth+site_get_alt(source)+path.elevation[0];
+			dest_alt=four_thirds_earth+site_get_alt(destination)+path.elevation[y];
 			dest_alt2=dest_alt*dest_alt;
 			xmtr_alt2=xmtr_alt*xmtr_alt;
 
@@ -2430,7 +2430,7 @@ void PlotLRPath(site_t * source, site_t * destination, unsigned char mask_value,
 				{
 					distance=path.distance[x];
 
-					test_alt=METERS_PER_FOOT*four_thirds_earth+(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+clutter);
+					test_alt=four_thirds_earth+(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+clutter);
 
 					/* Calculate the cosine of the elevation
 					   angle of the terrain (test point)
@@ -6221,7 +6221,7 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 
 	sprintf(report_name,"%s-to-%s.txt",site_get_name(source),site_get_name(destination));
 
-	four_thirds_earth=FOUR_THIRDS*EARTHRADIUS_METER*FOOT_PER_METERS;
+	four_thirds_earth=FOUR_THIRDS*EARTHRADIUS_METER;
 
 	for (x=0; report_name[x]!=0; x++)
 		if (report_name[x]==32 || report_name[x]==17 || report_name[x]==92 || report_name[x]==42 || report_name[x]==47)
@@ -6507,8 +6507,8 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 		for (y=2; y<(path.length-1); y++)  /* path.length-1 avoids LR error */
 		{
 			distance=path.distance[y];
-			source_alt=METERS_PER_FOOT*four_thirds_earth+site_get_alt(source)+path.elevation[0];
-			dest_alt=METERS_PER_FOOT*four_thirds_earth+site_get_alt(destination)+path.elevation[y];
+			source_alt=four_thirds_earth+site_get_alt(source)+path.elevation[0];
+			dest_alt=four_thirds_earth+site_get_alt(destination)+path.elevation[y];
 			dest_alt2=dest_alt*dest_alt;
 			source_alt2=source_alt*source_alt;
 
@@ -6526,7 +6526,7 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 				for (x=2, block=0; x<y && block==0; x++)
 				{
 					distance=path.distance[y]-path.distance[x];
-					test_alt=METERS_PER_FOOT*four_thirds_earth+path.elevation[x];
+					test_alt=four_thirds_earth+path.elevation[x];
 
 					/* Calculate the cosine of the elevation
 					   angle of the terrain (test point)
