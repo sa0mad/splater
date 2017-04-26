@@ -327,7 +327,7 @@ void ReadPath(site_t * source, site_t * destination)
 	int	c;
 	double	azimuth, distance, lat1, lon1, beta, den, num,
 		lat2, lon2, total_distance, dx, dy, path_length,
-		miles_per_sample, samples_per_radian=68755.0;
+		meters_per_sample, samples_per_radian=68755.0;
 	site_t * tempsite;
 
 	tempsite = site_alloc();
@@ -346,16 +346,16 @@ void ReadPath(site_t * source, site_t * destination)
 
 	azimuth=Azimuth(source,destination)*DEG2RAD;
 
-	total_distance=MILE_PER_METER*Distance(source,destination);
+	total_distance=Distance(source,destination);
 
-	if (total_distance>(30.0/ppd))		/* > 0.5 pixel distance */
+	if (MILE_PER_METER*total_distance>(30.0/ppd))		/* > 0.5 pixel distance */
 	{
 		dx=samples_per_radian*acos(cos(lon1-lon2));
 		dy=samples_per_radian*acos(cos(lat1-lat2));
 
 		path_length=sqrt((dx*dx)+(dy*dy));		/* Total number of samples */
 
-		miles_per_sample=total_distance/path_length;	/* Miles per sample */
+		meters_per_sample=total_distance/path_length;	/* Meters per sample */
 	}
 
 	else
@@ -364,7 +364,7 @@ void ReadPath(site_t * source, site_t * destination)
 		dx=0.0;
 		dy=0.0;
 		path_length=0.0;
-		miles_per_sample=0.0;
+		meters_per_sample=0.0;
 		total_distance=0.0;
 
 		lat1=lat1/DEG2RAD;
@@ -376,9 +376,9 @@ void ReadPath(site_t * source, site_t * destination)
 		path.distance[c]=0.0;
 	}
 
-	for (distance=0.0, c=0; (total_distance!=0.0 && distance<=total_distance && c<ARRAYSIZE); c++, distance=miles_per_sample*(double)c)
+	for (distance=0.0, c=0; (total_distance!=0.0 && distance<=total_distance && c<ARRAYSIZE); c++, distance=meters_per_sample*(double)c)
 	{
-		beta=distance/(EARTHRADIUS_METER*MILE_PER_METER);
+		beta=distance/EARTHRADIUS_METER;
 		lat2=asin(sin(lat1)*cos(beta)+cos(azimuth)*sin(beta)*cos(lat1));
 		num=cos(beta)-(sin(lat1)*sin(lat2));
 		den=cos(lat1)*cos(lat2);
@@ -413,7 +413,7 @@ void ReadPath(site_t * source, site_t * destination)
 		path.lon[c]=lon2;
 		site_set_pos(tempsite, lat2, lon2, 0.0);
 		path.elevation[c]=dem_get_elevation_loc(tempsite);
-		path.distance[c]=METERS_PER_MILE*distance;
+		path.distance[c]=distance;
 	}
 
 	/* Make sure exact destination point is recorded at path.length-1 */
@@ -423,7 +423,7 @@ void ReadPath(site_t * source, site_t * destination)
 		path.lat[c]=site_get_lat_deg(destination);
 		path.lon[c]=site_get_lon_deg(destination);
 		path.elevation[c]=dem_get_elevation_loc(destination);
-		path.distance[c]=METERS_PER_MILE*total_distance;
+		path.distance[c]=total_distance;
 		c++;
 	}
 
