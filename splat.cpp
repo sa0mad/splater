@@ -7854,12 +7854,12 @@ int main(int argc, char *argv[])
 
 	if (metric)
 	{
-		altitudeLR/=METERS_PER_FOOT;	/* meters --> feet */
 		max_range/=KM_PER_MILE;		/* kilometers --> miles */
-		altitude/=METERS_PER_FOOT;	/* meters --> feet */
 	}
 	else
 	{
+		altitudeLR*=METERS_PER_FOOT;	/* feet --> meters */
+		altitude*=METERS_PER_FOOT;	/* feet --> meters */
 		clutter*=METERS_PER_FOOT;	/* feet --> meters */
 	}
 
@@ -8004,12 +8004,12 @@ int main(int argc, char *argv[])
 			/* "Ball park" estimates used to load any additional
 			   SDF files required to conduct this analysis. */
 
-			tx_range=sqrt(1.5*(site_get_alt(tx_site[z])+FOOT_PER_METERS*dem_get_elevation_loc(tx_site[z])));
+			tx_range=sqrt(1.5*(FOOT_PER_METER*site_get_alt(tx_site[z])+FOOT_PER_METERS*dem_get_elevation_loc(tx_site[z])));
 
 			if (LRmap)
-				rx_range=sqrt(1.5*altitudeLR);
+				rx_range=sqrt(1.5*FOOT_PER_METER*altitudeLR);
 			else
-				rx_range=sqrt(1.5*altitude);
+				rx_range=sqrt(1.5*FOOT_PER_METER*altitude);
 
 			/* deg_range determines the maximum
 			   amount of topo data we read */
@@ -8299,10 +8299,10 @@ int main(int argc, char *argv[])
 		for (x=0; x<txsites && x<max_txsites; x++)
 		{
 			if (coverage)
-				PlotLOSMap(tx_site[x],altitude*METERS_PER_FOOT);
+				PlotLOSMap(tx_site[x],altitude);
 
 			else if (ReadLRParm(tx_site[x],1))
-					PlotLRMap(tx_site[x],altitudeLR*METERS_PER_FOOT,ano_filename);
+					PlotLRMap(tx_site[x],altitudeLR,ano_filename);
 
 			SiteReport(tx_site[x]);
 		}
