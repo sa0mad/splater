@@ -413,7 +413,7 @@ void ReadPath(site_t * source, site_t * destination)
 		path.lon[c]=lon2;
 		site_set_pos(tempsite, lat2, lon2, 0.0);
 		path.elevation[c]=dem_get_elevation_loc(tempsite);
-		path.distance[c]=distance;
+		path.distance[c]=METERS_PER_MILE*distance;
 	}
 
 	/* Make sure exact destination point is recorded at path.length-1 */
@@ -423,7 +423,7 @@ void ReadPath(site_t * source, site_t * destination)
 		path.lat[c]=site_get_lat_deg(destination);
 		path.lon[c]=site_get_lon_deg(destination);
 		path.elevation[c]=dem_get_elevation_loc(destination);
-		path.distance[c]=total_distance;
+		path.distance[c]=METERS_PER_MILE*total_distance;
 		c++;
 	}
 
@@ -472,7 +472,7 @@ double ElevationAngle2(site_t * source, site_t * destination, double er)
  
 	for (x=2, block=0; x<path.length && block==0; x++)
 	{
-		distance=FOOT_PER_MILE*path.distance[x];
+		distance=path.distance[x];
 
 		test_alt=earthradius+(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+clutter);
 
@@ -586,7 +586,7 @@ double AverageTerrain(site_t * source, double azimuthx, double start_distance, d
 
 		for (c=0, samples=0; c<endpoint; c++)
 		{
-			if (path.distance[c]>=start_distance)
+			if (path.distance[c]>=METERS_PER_MILE*start_distance)
 			{
 				terrain+=FOOT_PER_METERS*(path.elevation[c]==0.0?path.elevation[c]:path.elevation[c]+clutter);
 				samples++;
@@ -2322,7 +2322,7 @@ void PlotPath(site_t * source, site_t * destination, char mask_value)
 
 		if ((dem_get_mask_pos(path.lat[y],path.lon[y])&mask_value)==0)
 		{
-			distance=METERS_PER_FOOT*FOOT_PER_MILE*path.distance[y];
+			distance=path.distance[y];
 			tx_alt=earthradius+site_get_alt(source)+path.elevation[0];
 			rx_alt=earthradius+site_get_alt(destination)+path.elevation[y];
 
@@ -2333,7 +2333,7 @@ void PlotPath(site_t * source, site_t * destination, char mask_value)
 
 			for (x=y, block=0; x>=0 && block==0; x--)
 			{
-				distance=METERS_PER_FOOT*FOOT_PER_MILE*(path.distance[y]-path.distance[x]);
+				distance=path.distance[y]-path.distance[x];
 				test_alt=earthradius+(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+clutter);
 
 				cos_test_angle=((rx_alt*rx_alt)+(distance*distance)-(test_alt*test_alt))/(2.0*rx_alt*distance);
@@ -2396,14 +2396,14 @@ void PlotLRPath(site_t * source, site_t * destination, unsigned char mask_value,
 	   is required for properly integrating the antenna's elevation
 	   pattern into the calculation for overall path loss. */
 
-	for (y=2; (y<(path.length-1) && path.distance[y]<=max_range); y++)
+	for (y=2; (y<(path.length-1) && path.distance[y]<=METERS_PER_MILE*max_range); y++)
 	{
 		/* Process this point only if it
 		   has not already been processed. */
 
 		if ((dem_get_mask_pos(path.lat[y],path.lon[y])&248)!=(mask_value<<3))
 		{
-			distance=METERS_PER_FOOT*FOOT_PER_MILE*path.distance[y];
+			distance=path.distance[y];
 			xmtr_alt=METERS_PER_FOOT*four_thirds_earth+site_get_alt(source)+path.elevation[0];
 			dest_alt=METERS_PER_FOOT*four_thirds_earth+site_get_alt(destination)+path.elevation[y];
 			dest_alt2=dest_alt*dest_alt;
@@ -2428,7 +2428,7 @@ void PlotLRPath(site_t * source, site_t * destination, unsigned char mask_value,
 
 				for (x=2, block=0; (x<y && block==0); x++)
 				{
-					distance=METERS_PER_FOOT*FOOT_PER_MILE*path.distance[x];
+					distance=path.distance[x];
 
 					test_alt=METERS_PER_FOOT*four_thirds_earth+(path.elevation[x]==0.0?path.elevation[x]:path.elevation[x]+clutter);
 
@@ -2472,7 +2472,7 @@ void PlotLRPath(site_t * source, site_t * destination, unsigned char mask_value,
 
 			/* Distance between elevation samples */
 
-			elev[1]=METERS_PER_MILE*(path.distance[y]-path.distance[y-1]);
+			elev[1]=path.distance[y]-path.distance[y-1];
 
 			if (olditm)
 				point_to_point_ITM(elev,site_get_alt(source), 
@@ -5303,18 +5303,18 @@ void GraphTerrain(site_t * source, site_t * destination, char *name)
 
 		if (metric)
 		{
-			fprintf(fd,"%f\t%f\n",KM_PER_MILE*path.distance[x],path.elevation[x]);
+			fprintf(fd,"%f\t%f\n",KM_PER_METER*path.distance[x],path.elevation[x]);
 
 			if (fd1!=NULL && x>0 && x<path.length-2)
-				fprintf(fd1,"%f\t%f\n",KM_PER_MILE*path.distance[x],(path.elevation[x]==0.0?path.elevation[x]:(path.elevation[x]+clutter)));
+				fprintf(fd1,"%f\t%f\n",KM_PER_METER*path.distance[x],(path.elevation[x]==0.0?path.elevation[x]:(path.elevation[x]+clutter)));
 		}
 
 		else
 		{
-			fprintf(fd,"%f\t%f\n",path.distance[x],FOOT_PER_METERS*path.elevation[x]);
+			fprintf(fd,"%f\t%f\n",MILE_PER_METER*path.distance[x],FOOT_PER_METERS*path.elevation[x]);
 
 			if (fd1!=NULL && x>0 && x<path.length-2)
-				fprintf(fd1,"%f\t%f\n",path.distance[x],(path.elevation[x]==0.0?FOOT_PER_METERS*path.elevation[x]:(FOOT_PER_METERS*path.elevation[x]+clutter*FOOT_PER_METERS)));
+				fprintf(fd1,"%f\t%f\n",MILE_PER_METER*path.distance[x],(path.elevation[x]==0.0?FOOT_PER_METERS*path.elevation[x]:(FOOT_PER_METERS*path.elevation[x]+clutter*FOOT_PER_METERS)));
 		}
 	}
 
@@ -5389,7 +5389,7 @@ void GraphTerrain(site_t * source, site_t * destination, char *name)
 
 	if (metric)
 	{
-		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",site_get_name(destination),site_get_name(source),KM_PER_MILE*MILE_PER_METER*Distance(source,destination));
+		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",site_get_name(destination),site_get_name(source),KM_PER_METER*Distance(source,destination));
 		fprintf(fd,"set ylabel \"Ground Elevation Above Sea Level (meters)\"\n");
 	}
 
@@ -5484,22 +5484,22 @@ void GraphElevation(site_t * source, site_t * destination, char *name)
 
 		if (metric)
 		{
-			fprintf(fd,"%f\t%f\n",KM_PER_MILE*path.distance[x],angle);
+			fprintf(fd,"%f\t%f\n",KM_PER_METER*path.distance[x],angle);
 
 			if (fd1!=NULL)
-				fprintf(fd1,"%f\t%f\n",KM_PER_MILE*path.distance[x],clutter_angle);
+				fprintf(fd1,"%f\t%f\n",KM_PER_METER*path.distance[x],clutter_angle);
 
-			fprintf(fd2,"%f\t%f\n",KM_PER_MILE*path.distance[x],refangle);
+			fprintf(fd2,"%f\t%f\n",KM_PER_METER*path.distance[x],refangle);
 		}
 
 		else
 		{
-			fprintf(fd,"%f\t%f\n",path.distance[x],angle);
+			fprintf(fd,"%f\t%f\n",MILE_PER_METER*path.distance[x],angle);
 
 			if (fd1!=NULL)
-				fprintf(fd1,"%f\t%f\n",path.distance[x],clutter_angle);
+				fprintf(fd1,"%f\t%f\n",MILE_PER_METER*path.distance[x],clutter_angle);
 
-			fprintf(fd2,"%f\t%f\n",path.distance[x],refangle);
+			fprintf(fd2,"%f\t%f\n",MILE_PER_METER*path.distance[x],refangle);
 		}
 
 		if (angle>maxangle)
@@ -5514,14 +5514,14 @@ void GraphElevation(site_t * source, site_t * destination, char *name)
 
 	if (metric)
 	{
-		fprintf(fd,"%f\t%f\n",KM_PER_MILE*path.distance[path.length-1],refangle);
-		fprintf(fd2,"%f\t%f\n",KM_PER_MILE*path.distance[path.length-1],refangle);
+		fprintf(fd,"%f\t%f\n",KM_PER_METER*path.distance[path.length-1],refangle);
+		fprintf(fd2,"%f\t%f\n",KM_PER_METER*path.distance[path.length-1],refangle);
 	}
 
 	else
 	{
-		fprintf(fd,"%f\t%f\n",path.distance[path.length-1],refangle);
-		fprintf(fd2,"%f\t%f\n",path.distance[path.length-1],refangle);
+		fprintf(fd,"%f\t%f\n",MILE_PER_METER*path.distance[path.length-1],refangle);
+		fprintf(fd2,"%f\t%f\n",MILE_PER_METER*path.distance[path.length-1],refangle);
 	}
 
 	fclose(fd);
@@ -5674,7 +5674,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 	if (fresnel_plot)
 	{
 		lambda=9.8425e8/(LR.frq_mhz*1e6);
-		d=FOOT_PER_MILE*path.distance[path.length-1];
+		d=FOOT_PER_METERS*path.distance[path.length-1];
 	}
 
 	if (normalized)
@@ -5682,7 +5682,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 		ed=FOOT_PER_METERS*dem_get_elevation_loc(destination);
 		es=FOOT_PER_METERS*dem_get_elevation_loc(source);
 		nb=-site_get_alt(destination)*FOOT_PER_METERS-ed;
-		nm=(-site_get_alt(source)*FOOT_PER_METERS-es-nb)/(path.distance[path.length-1]);
+		nm=(-site_get_alt(source)*FOOT_PER_METERS-es-nb)/(MILE_PER_METER*path.distance[path.length-1]);
 	}
 
 	fd=fopen("profile.gp","wb");
@@ -5725,14 +5725,14 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 
 		if ((LR.frq_mhz>=20.0) && (LR.frq_mhz<=20000.0) && fresnel_plot)
 		{
-			d1=FOOT_PER_MILE*path.distance[x];
+			d1=FOOT_PER_METERS*path.distance[x];
 			f_zone=-1.0*sqrt(lambda*d1*(d-d1)/d);
 			fpt6_zone=f_zone*fzone_clearance;
 		}
 
 		if (normalized)
 		{
-			r=-(nm*path.distance[x])-nb;
+			r=-(nm*MILE_PER_METER*path.distance[x])-nb;
 			height+=r;
 
 			if ((LR.frq_mhz>=20.0) && (LR.frq_mhz<=20000.0) && fresnel_plot)
@@ -5747,38 +5747,38 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 
 		if (metric)
 		{
-			fprintf(fd,"%f\t%f\n",KM_PER_MILE*path.distance[x],METERS_PER_FOOT*height);
+			fprintf(fd,"%f\t%f\n",KM_PER_METER*path.distance[x],METERS_PER_FOOT*height);
 
 			if (fd1!=NULL && x>0 && x<path.length-2)
-				fprintf(fd1,"%f\t%f\n",KM_PER_MILE*path.distance[x],METERS_PER_FOOT*(terrain==0.0?height:(height+clutter*FOOT_PER_METERS)));
+				fprintf(fd1,"%f\t%f\n",KM_PER_METER*path.distance[x],METERS_PER_FOOT*(terrain==0.0?height:(height+clutter*FOOT_PER_METERS)));
 
-			fprintf(fd2,"%f\t%f\n",KM_PER_MILE*path.distance[x],METERS_PER_FOOT*r);
-			fprintf(fd5,"%f\t%f\n",KM_PER_MILE*path.distance[x],METERS_PER_FOOT*(height-terrain));
+			fprintf(fd2,"%f\t%f\n",KM_PER_METER*path.distance[x],METERS_PER_FOOT*r);
+			fprintf(fd5,"%f\t%f\n",KM_PER_METER*path.distance[x],METERS_PER_FOOT*(height-terrain));
 		}
 
 		else
 		{
-			fprintf(fd,"%f\t%f\n",path.distance[x],height);
+			fprintf(fd,"%f\t%f\n",MILE_PER_METER*path.distance[x],height);
 
 			if (fd1!=NULL && x>0 && x<path.length-2)
-				fprintf(fd1,"%f\t%f\n",path.distance[x],(terrain==0.0?height:(height+clutter*FOOT_PER_METERS)));
+				fprintf(fd1,"%f\t%f\n",MILE_PER_METER*path.distance[x],(terrain==0.0?height:(height+clutter*FOOT_PER_METERS)));
 
-			fprintf(fd2,"%f\t%f\n",path.distance[x],r);
-			fprintf(fd5,"%f\t%f\n",path.distance[x],height-terrain);
+			fprintf(fd2,"%f\t%f\n",MILE_PER_METER*path.distance[x],r);
+			fprintf(fd5,"%f\t%f\n",MILE_PER_METER*path.distance[x],height-terrain);
 		}
 
 		if ((LR.frq_mhz>=20.0) && (LR.frq_mhz<=20000.0) && fresnel_plot)
 		{
 			if (metric)
 			{
-				fprintf(fd3,"%f\t%f\n",KM_PER_MILE*path.distance[x],METERS_PER_FOOT*f_zone);
-				fprintf(fd4,"%f\t%f\n",KM_PER_MILE*path.distance[x],METERS_PER_FOOT*fpt6_zone);
+				fprintf(fd3,"%f\t%f\n",KM_PER_METER*path.distance[x],METERS_PER_FOOT*f_zone);
+				fprintf(fd4,"%f\t%f\n",KM_PER_METER*path.distance[x],METERS_PER_FOOT*fpt6_zone);
 			}
 
 			else
 			{
-				fprintf(fd3,"%f\t%f\n",path.distance[x],f_zone);
-				fprintf(fd4,"%f\t%f\n",path.distance[x],fpt6_zone);
+				fprintf(fd3,"%f\t%f\n",MILE_PER_METER*path.distance[x],f_zone);
+				fprintf(fd4,"%f\t%f\n",MILE_PER_METER*path.distance[x],fpt6_zone);
 			}
 
 			if (f_zone<minheight)
@@ -5802,34 +5802,34 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 	}
 
 	if (normalized)
-		r=-(nm*path.distance[path.length-1])-nb;
+		r=-(nm*MILE_PER_METER*path.distance[path.length-1])-nb;
 	else
 		r=0.0;
 
 	if (metric)
 	{
-		fprintf(fd,"%f\t%f\n",KM_PER_MILE*path.distance[path.length-1],METERS_PER_FOOT*r);
-		fprintf(fd2,"%f\t%f\n",KM_PER_MILE*path.distance[path.length-1],METERS_PER_FOOT*r);
+		fprintf(fd,"%f\t%f\n",KM_PER_METER*path.distance[path.length-1],METERS_PER_FOOT*r);
+		fprintf(fd2,"%f\t%f\n",KM_PER_METER*path.distance[path.length-1],METERS_PER_FOOT*r);
 	}
 
 	else
 	{
-		fprintf(fd,"%f\t%f\n",path.distance[path.length-1],r);
-		fprintf(fd2,"%f\t%f\n",path.distance[path.length-1],r);
+		fprintf(fd,"%f\t%f\n",MILE_PER_METER*path.distance[path.length-1],r);
+		fprintf(fd2,"%f\t%f\n",MILE_PER_METER*path.distance[path.length-1],r);
 	}
 
 	if ((LR.frq_mhz>=20.0) && (LR.frq_mhz<=20000.0) && fresnel_plot)
 	{
 		if (metric)
 		{
-			fprintf(fd3,"%f\t%f\n",KM_PER_MILE*path.distance[path.length-1],METERS_PER_FOOT*r);
-			fprintf(fd4,"%f\t%f\n",KM_PER_MILE*path.distance[path.length-1],METERS_PER_FOOT*r);
+			fprintf(fd3,"%f\t%f\n",KM_PER_METER*path.distance[path.length-1],METERS_PER_FOOT*r);
+			fprintf(fd4,"%f\t%f\n",KM_PER_METER*path.distance[path.length-1],METERS_PER_FOOT*r);
 		}
 
 		else
 		{
-			fprintf(fd3,"%f\t%f\n",path.distance[path.length-1],r);
-			fprintf(fd4,"%f\t%f\n",path.distance[path.length-1],r);
+			fprintf(fd3,"%f\t%f\n",MILE_PER_METER*path.distance[path.length-1],r);
+			fprintf(fd4,"%f\t%f\n",MILE_PER_METER*path.distance[path.length-1],r);
 		}
 	}
 	
@@ -5935,7 +5935,7 @@ void GraphHeight(site_t * source, site_t * destination, char *name, unsigned cha
 		fprintf(fd,"set title \"%s Height Profile Between %s and %s (%.2f%c azimuth)\"\n",splat_name, site_get_name(destination), site_get_name(source), azimuth,176);
 
 	if (metric)
-		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",site_get_name(destination),site_get_name(source),KM_PER_MILE*MILE_PER_METER*Distance(source,destination));
+		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",site_get_name(destination),site_get_name(source),KM_PER_METER*Distance(source,destination));
 	else
 		fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f miles)\"\n",site_get_name(destination),site_get_name(source),MILE_PER_METER*Distance(source,destination));
 
@@ -6285,7 +6285,7 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 	}
 
 	if (metric)
-		fprintf(fd2,"Distance to %s: %.2f kilometers\n",site_get_name(destination),KM_PER_MILE*MILE_PER_METER*Distance(source,destination));
+		fprintf(fd2,"Distance to %s: %.2f kilometers\n",site_get_name(destination),KM_PER_METER*Distance(source,destination));
 
 	else
 		fprintf(fd2,"Distance to %s: %.2f miles\n",site_get_name(destination),MILE_PER_METER*Distance(source,destination));
@@ -6351,7 +6351,7 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 	}
 
 	if (metric)
-		fprintf(fd2,"Distance to %s: %.2f kilometers\n",site_get_name(source),KM_PER_MILE*MILE_PER_METER*Distance(source,destination));
+		fprintf(fd2,"Distance to %s: %.2f kilometers\n",site_get_name(source),KM_PER_METER*Distance(source,destination));
 
 	else
 		fprintf(fd2,"Distance to %s: %.2f miles\n",site_get_name(source),MILE_PER_METER*Distance(source,destination));
@@ -6506,7 +6506,7 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 
 		for (y=2; y<(path.length-1); y++)  /* path.length-1 avoids LR error */
 		{
-			distance=METERS_PER_FOOT*FOOT_PER_MILE*path.distance[y];
+			distance=path.distance[y];
 			source_alt=METERS_PER_FOOT*four_thirds_earth+site_get_alt(source)+path.elevation[0];
 			dest_alt=METERS_PER_FOOT*four_thirds_earth+site_get_alt(destination)+path.elevation[y];
 			dest_alt2=dest_alt*dest_alt;
@@ -6525,7 +6525,7 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 
 				for (x=2, block=0; x<y && block==0; x++)
 				{
-					distance=METERS_PER_FOOT*FOOT_PER_MILE*(path.distance[y]-path.distance[x]);
+					distance=path.distance[y]-path.distance[x];
 					test_alt=METERS_PER_FOOT*four_thirds_earth+path.elevation[x];
 
 					/* Calculate the cosine of the elevation
@@ -6560,7 +6560,7 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 
 			/* Distance between elevation samples */
 
-			elev[1]=METERS_PER_MILE*(path.distance[y]-path.distance[y-1]);
+			elev[1]=path.distance[y]-path.distance[y-1];
 
 			if (olditm)
 				point_to_point_ITM(elev,site_get_alt(source), 
@@ -6599,10 +6599,10 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 			total_loss=loss-patterndB;
 
 			if (metric)
-				fprintf(fd,"%f\t%f\n",KM_PER_MILE*path.distance[y],total_loss);
+				fprintf(fd,"%f\t%f\n",KM_PER_METER*path.distance[y],total_loss);
 
 			else
-				fprintf(fd,"%f\t%f\n",path.distance[y],total_loss);
+				fprintf(fd,"%f\t%f\n",MILE_PER_METER*path.distance[y],total_loss);
 
 			if (total_loss>maxloss)
 				maxloss=total_loss;
@@ -6793,7 +6793,7 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 		fprintf(fd,"set title \"%s Loss Profile Along Path Between %s and %s (%.2f%c azimuth)\"\n",splat_name, site_get_name(destination), site_get_name(source), Azimuth(destination,source),176);
 
 		if (metric)
-			fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",site_get_name(destination),site_get_name(source),KM_PER_MILE*MILE_PER_METER*Distance(destination,source));
+			fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f kilometers)\"\n",site_get_name(destination),site_get_name(source),KM_PER_METER*Distance(destination,source));
 		else
 			fprintf(fd,"set xlabel \"Distance Between %s and %s (%.2f miles)\"\n",site_get_name(destination),site_get_name(source),MILE_PER_METER*Distance(destination,source));
 
@@ -7252,7 +7252,7 @@ void WriteKML(site_t * source, site_t * destination)
 
 	for (y=0; y<path.length; y++)
 	{
-		distance=METERS_PER_FOOT*FOOT_PER_MILE*path.distance[y];
+		distance=path.distance[y];
 		tx_alt=earthradius+site_get_alt(source)+path.elevation[0];
 		rx_alt=earthradius+site_get_alt(destination)+path.elevation[y];
 
@@ -7263,7 +7263,7 @@ void WriteKML(site_t * source, site_t * destination)
 
 		for (x=y, block=0; x>=0 && block==0; x--)
 		{
-			distance=METERS_PER_FOOT*FOOT_PER_MILE*(path.distance[y]-path.distance[x]);
+			distance=path.distance[y]-path.distance[x];
 			test_alt=earthradius+path.elevation[x];
 
 			cos_test_angle=((rx_alt*rx_alt)+(distance*distance)-(test_alt*test_alt))/(2.0*rx_alt*distance);
