@@ -588,7 +588,7 @@ double AverageTerrain(site_t * source, double azimuthx, double start_distance, d
 		{
 			if (path.distance[c]>=METERS_PER_MILE*start_distance)
 			{
-				terrain+=FOOT_PER_METERS*(path.elevation[c]==0.0?path.elevation[c]:path.elevation[c]+clutter);
+				terrain+=(path.elevation[c]==0.0?path.elevation[c]:path.elevation[c]+clutter);
 				samples++;
 			}
 		}
@@ -637,7 +637,7 @@ double haat(site_t * antenna)
 	else
 	{
 		avg_terrain=(sum/(double)c);
-		haat=(FOOT_PER_METERS*site_get_alt(antenna)+FOOT_PER_METERS*dem_get_elevation_loc(antenna))-avg_terrain;
+		haat=(site_get_alt(antenna)+dem_get_elevation_loc(antenna))-avg_terrain;
 		return haat;
 	}
 }
@@ -6265,9 +6265,9 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 	if (haavt>-4999.0)
 	{
 		if (metric)
-			fprintf(fd2,"Antenna height above average terrain: %.2f meters\n",METERS_PER_FOOT*haavt);
+			fprintf(fd2,"Antenna height above average terrain: %.2f meters\n",haavt);
 		else
-			fprintf(fd2,"Antenna height above average terrain: %.2f feet\n",haavt);
+			fprintf(fd2,"Antenna height above average terrain: %.2f feet\n",FOOT_PER_METERS*haavt);
 	}
 
 	azimuth=Azimuth(source,destination);
@@ -6345,9 +6345,9 @@ void PathReport(site_t * source, site_t * destination, char *name, char graph_it
 	if (haavt>-4999.0)
 	{
 		if (metric)
-			fprintf(fd2,"Antenna height above average terrain: %.2f meters\n",METERS_PER_FOOT*haavt);
+			fprintf(fd2,"Antenna height above average terrain: %.2f meters\n",haavt);
 		else
-			fprintf(fd2,"Antenna height above average terrain: %.2f feet\n",haavt);
+			fprintf(fd2,"Antenna height above average terrain: %.2f feet\n",FOOT_PER_METERS*haavt);
 	}
 
 	if (metric)
@@ -6885,9 +6885,9 @@ void SiteReport(site_t * xmtr)
 	if (terrain>-4999.0)
 	{
 		if (metric)
-			fprintf(fd,"Antenna height above average terrain: %.2f meters\n\n",METERS_PER_FOOT*terrain);
+			fprintf(fd,"Antenna height above average terrain: %.2f meters\n\n",terrain);
 		else
-			fprintf(fd,"Antenna height above average terrain: %.2f feet\n\n",terrain);
+			fprintf(fd,"Antenna height above average terrain: %.2f feet\n\n",FOOT_PER_METERS*terrain);
 
 		/* Display the average terrain between 2 and 10 miles
 		   from the transmitter site at azimuths of 0, 45, 90,
@@ -6901,9 +6901,9 @@ void SiteReport(site_t * xmtr)
 			if (terrain>-4999.0)
 			{
 				if (metric)
-					fprintf(fd,"%.2f meters AMSL\n",METERS_PER_FOOT*terrain);
+					fprintf(fd,"%.2f meters AMSL\n",terrain);
 				else
-					fprintf(fd,"%.2f feet AMSL\n",terrain);
+					fprintf(fd,"%.2f feet AMSL\n",FOOT_PER_METERS*terrain);
 			}
 
 			else
